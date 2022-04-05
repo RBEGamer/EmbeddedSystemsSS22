@@ -19,7 +19,6 @@ Jeweils mit der Port und Pin-Definition
 ```c++
     //GREEN LED
     HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, ENorDI);
-
     //ORANGE LED
 	HAL_GPIO_WritePin(ORANGE_LED_GPIO_Port, ORANGE_LED_Pin, ENorDI);
 ```
