@@ -28,7 +28,7 @@ Jeweils mit der Port und Pin-Definition
 Der Timer7 wird in diesem Projekt, für das Messen der Zeit zwischen Spielstart `state=STATUS_RANDOM_TIMER_EXPIRED` und der Wechsel in den `state=STATUS_MEASUREMENT_DONE` Status.
 Dieser wird mit den Betätigen des User-Buttons `PA0` gewechselt.
 Der Timer soll eine Periodendauer von `1ms` haben, somit soll auch die Zeit in `ms` Schritten angezeigt werden.
-Hierzu muss der Prescaler angepasst werden. Das Ergebnis (Zeit, zwischen Start/Stop des Timers) kann dann aus dem Counter Register `htim7.Instance->CNT` entnommen werden.
+Hierzu muss der Prescaler angepasst werden.
 
 [tim7_1ms](./images/tim7_1ms.png)
 
@@ -84,3 +84,6 @@ Somit wurden drei Gruppen erstellt:
 * `1` = `EXTI 0 (BUTTONS_IRQ)`
 * `2` = `TIM6, TIM7`
 
+## IRQ MESSUNGEN
+
+[btn_trg](./images/btn_trg.png)
