@@ -30,13 +30,13 @@ Dieser wird mit den Betätigen des User-Buttons `PA0` gewechselt.
 Der Timer soll eine Periodendauer von `1ms` haben, somit soll auch die Zeit in `ms` Schritten angezeigt werden.
 Hierzu muss der Prescaler angepasst werden.
 
-[tim7_1ms](./images/tim7_1ms.png)
+![tim7_1ms](./images/tim7_1ms.png)
 
 In der Clock-Configuration, wird der Timer7 über die `APB1 Timer-Clock` Einstellung eingestellt.
 Diese ist in der Projektmapp auf `10.5 MHz` eingestellt. Mittels des Prescalers des Timers kann der Takt reduziert werden.
 Hier `10.000.000 / 1000 ms/s * 10 counter_period = 1.000 PSC`, somit wird der Interrupt jede Milli-Sekunde ausgelößt.
 
-[tim7_1ms_cap](./images/tim7_1ms_cap.png)
+![tim7_1ms_cap](./images/tim7_1ms_cap.png)
 
 Die Messung zeigt, dass mit diesen Einstellungen eine Periodendauer von `1.0489ms` erreicht wird, welches für diesen Anwendungsfall ausreichend ist.
 
@@ -73,7 +73,7 @@ oder durch ändern der Timer-Configuration und anschließender erneuter Initiali
 
 ## NVIC
 
-[nvic](./images/nvic.png)
+![nvic](./images/nvic.png)
 
 
 Durch die Verwendung der verschiedenen Timer und der `HAL_Delay` Funktion, muss das Interrupt-Verhalten zusätzlich angepasst werden.
@@ -86,4 +86,4 @@ Somit wurden drei Gruppen erstellt:
 
 ## IRQ MESSUNGEN
 
-[btn_trg](./images/btn_trg.png)
+![btn_trg](./images/btn_trg.png)
