@@ -3,6 +3,13 @@
 
 ## AUFBAU
 
+
+```c++
+// main.c 102
+  	lcd_handle.i2c_handle = &hi2c1;
+```
+Das Display ist mit der ersten I2C Schnittstelle verbunden, somit muss dies an die folgenden GPIOs angeschlossen werden.
+
 | DISPLAY | STM-DISCOVERY |
 |---------|---------------|
 | VCC     | 5V            |
@@ -17,9 +24,10 @@ Um eine einfache Ansteuerung der LEDs zu ermöglichen, wurde diesen in den Proje
 Nach der Generierung des Codes, werden die Labels als zusätzliche Defines erstellt. 
 Jeweils mit der Port und Pin-Definition
 ```c++
-    //GREEN LED
-    HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, ENorDI);
-    //ORANGE LED
+//main.cpp 275
+    	//GREEN LED
+    	HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, ENorDI);
+    	//ORANGE LED
 	HAL_GPIO_WritePin(ORANGE_LED_GPIO_Port, ORANGE_LED_Pin, ENorDI);
 ```
 
@@ -47,7 +55,8 @@ Der Timer6 wird verwendet um eine zufällige Wartezeit zwischen dem Start des Pr
 Hierzu wird zuerst eine Zufallszahl mittels `HAL_RNG_GenerateRandomNumber` erzeugt und anschließend auf den angegeben Wertebreich begrenzt.
 
 ```c++
-    //GET RANDOM NUMBER
+//main.cpp 248
+    	//GET RANDOM NUMBER
 	uint32_t rng = 0;
 	HAL_RNG_GenerateRandomNumber(&hrng, &rng);
 	//MAP 0-65536 => MIN_RND_VALUE-MAX_RND_VALUE
@@ -65,10 +74,11 @@ htim6.Instance->ARR  = rng;
 oder durch ändern der Timer-Configuration und anschließender erneuter Initialisierung:
 
 ```c++
-    //BASIS SETUP: htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
-    HAL_TIM_Base_Start_IT(&htim6);
+//main.cpp 266
+    	//BASIS SETUP: htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+    	HAL_TIM_Base_Start_IT(&htim6);
 	htim6.Init.Period = rng;
-    HAL_TIM_Base_Init(&htim6);
+    	HAL_TIM_Base_Init(&htim6);
 ```
 
 ## NVIC
