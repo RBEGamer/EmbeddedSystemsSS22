@@ -214,6 +214,9 @@ void EXTI0_IRQHandler(void)
   HAL_GPIO_EXTI_IRQHandler(B1_Pin);
   /* USER CODE BEGIN EXTI0_IRQn 1 */
 
+#ifdef DEBUG
+			HAL_GPIO_TogglePin(BTNTRG_GPIO_Port, BTNTRG_Pin);
+#endif
 
   if(status == STATUS_RANDOM_TIMER_RUNNING){
 	  status = STATUS_INVALID_MEASUREMENT;
@@ -235,11 +238,13 @@ void TIM6_DAC_IRQHandler(void)
   HAL_TIM_IRQHandler(&htim6);
   /* USER CODE BEGIN TIM6_DAC_IRQn 1 */
 
+#ifdef DEBUG
+			HAL_GPIO_WritePin(RNGOUT_GPIO_Port, RNGOUT_Pin, GPIO_PIN_RESET);
+#endif
 
   if(status == STATUS_RANDOM_TIMER_RUNNING){
   	 status = STATUS_RANDOM_TIMER_EXPIRED;
-
-    }
+  }
 
   /* USER CODE END TIM6_DAC_IRQn 1 */
 }
@@ -254,7 +259,9 @@ void TIM7_IRQHandler(void)
   HAL_TIM_IRQHandler(&htim7);
   /* USER CODE BEGIN TIM7_IRQn 1 */
 
-  //HAL_GPIO_TogglePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin);
+#ifdef DEBUG
+  HAL_GPIO_TogglePin(TIM7OUT_GPIO_Port, TIM7OUT_Pin);
+#endif
   //INCREASE TIMER
   reaction_time_in_ms++;
   /* USER CODE END TIM7_IRQn 1 */

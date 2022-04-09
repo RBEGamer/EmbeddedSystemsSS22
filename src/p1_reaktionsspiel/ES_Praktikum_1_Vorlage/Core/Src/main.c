@@ -143,7 +143,11 @@ int main(void)
 			printText(&lcd_handle, "Go!", delayValue);
 			status = STATUS_MEASURE_REACTION_TIME;
 			//SET LED
-			HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, GPIO_PIN_SET);
+			HAL_GPIO_WritePin(REDLED_GPIO_Port, REDLED_Pin, GPIO_PIN_SET);
+
+#ifdef DEBUG
+			HAL_GPIO_WritePin(USERTIME_GPIO_Port, USERTIME_Pin, GPIO_PIN_SET);
+#endif
 			//START MEASUREMENT TIMER
 			HAL_TIM_Base_Start_IT(&htim7);
 
@@ -151,6 +155,10 @@ int main(void)
 
 		case STATUS_MEASUREMENT_DONE:
 			HAL_TIM_Base_Stop_IT(&htim7);
+
+#ifdef DEBUG
+			HAL_GPIO_WritePin(USERTIME_GPIO_Port, USERTIME_Pin, GPIO_PIN_RESET);
+#endif
 			//reaction_time_in_ms = htim7.Instance->CNT / 10;
 			//Switch off all LEDs
 			switch_all_leds(DISABLE, 0);
@@ -162,13 +170,13 @@ int main(void)
 			//SWITCH DEPENDING SPEED
 			if(reaction_time_in_ms < 500){
 				snprintf (textBuffer, 32, "Time: %4u ms.  Well done!", (uint16_t) reaction_time_in_ms);
-				HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, GPIO_PIN_SET);
+				HAL_GPIO_WritePin(GREENLED_GPIO_Port, GREENLED_Pin, GPIO_PIN_SET);
 			}else if(reaction_time_in_ms >= 500 && reaction_time_in_ms <= 1000){
 				snprintf (textBuffer, 32, "Time: %4u ms.  Okay!", (uint16_t) reaction_time_in_ms);
-				HAL_GPIO_WritePin(ORANGE_LED_GPIO_Port, ORANGE_LED_Pin, GPIO_PIN_SET);
+				HAL_GPIO_WritePin(ORANGELED_GPIO_Port, ORANGELED_Pin, GPIO_PIN_SET);
 			}else{
 				snprintf (textBuffer, 32, "Time: %4u ms.  Are you asleep?", (uint16_t) reaction_time_in_ms);
-				HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, GPIO_PIN_SET);
+				HAL_GPIO_WritePin(REDLED_GPIO_Port, REDLED_Pin, GPIO_PIN_SET);
 			}
 
 			printText(&lcd_handle, textBuffer, delayValue);
@@ -261,7 +269,10 @@ void start_random_timer(){
 	HAL_TIM_Base_Init(&htim6);
 
 	//SET STATE
-	HAL_GPIO_WritePin(BLUE_LED_GPIO_Port, BLUE_LED_Pin,GPIO_PIN_SET);
+	HAL_GPIO_WritePin(BLUELED_GPIO_Port, BLUELED_Pin,GPIO_PIN_SET);
+#ifdef DEBUG
+			HAL_GPIO_WritePin(RNGOUT_GPIO_Port, RNGOUT_Pin, GPIO_PIN_SET);
+#endif
 	status = STATUS_RANDOM_TIMER_RUNNING;
 
 
@@ -273,20 +284,20 @@ void start_random_timer(){
 void switch_all_leds(uint8_t ENorDI, uint32_t delay_value){
 
 	if(delay_value <= 0){
-		HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, ENorDI);
-		HAL_GPIO_WritePin(ORANGE_LED_GPIO_Port, ORANGE_LED_Pin, ENorDI);
-		HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, ENorDI);
-		HAL_GPIO_WritePin(BLUE_LED_GPIO_Port, BLUE_LED_Pin, ENorDI);
+		HAL_GPIO_WritePin(GREENLED_GPIO_Port, GREENLED_Pin, ENorDI);
+		HAL_GPIO_WritePin(ORANGELED_GPIO_Port, ORANGELED_Pin, ENorDI);
+		HAL_GPIO_WritePin(REDLED_GPIO_Port, REDLED_Pin, ENorDI);
+		HAL_GPIO_WritePin(BLUELED_GPIO_Port, BLUELED_Pin, ENorDI);
 	}else{
 
 		//SWITCH SEQUENCE
-		HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, ENorDI);
+		HAL_GPIO_WritePin(GREENLED_GPIO_Port, GREENLED_Pin, ENorDI);
 		HAL_Delay(delay_value);
-		HAL_GPIO_WritePin(ORANGE_LED_GPIO_Port, ORANGE_LED_Pin, ENorDI);
+		HAL_GPIO_WritePin(ORANGELED_GPIO_Port, ORANGELED_Pin, ENorDI);
 		HAL_Delay(delay_value);
-		HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, ENorDI);
+		HAL_GPIO_WritePin(REDLED_GPIO_Port, REDLED_Pin, ENorDI);
 		HAL_Delay(delay_value);
-		HAL_GPIO_WritePin(BLUE_LED_GPIO_Port, BLUE_LED_Pin, ENorDI);
+		HAL_GPIO_WritePin(BLUELED_GPIO_Port, BLUELED_Pin, ENorDI);
 		HAL_Delay(delay_value);
 	}
 }
