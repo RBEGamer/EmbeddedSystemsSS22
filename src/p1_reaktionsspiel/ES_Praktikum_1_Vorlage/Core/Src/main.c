@@ -281,13 +281,13 @@ void switch_all_leds(uint8_t ENorDI, uint32_t delay_value){
 
 		//SWITCH SEQUENCE
 		HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, ENorDI);
-		HAL_Delay(500);
+		HAL_Delay(delay_value);
 		HAL_GPIO_WritePin(ORANGE_LED_GPIO_Port, ORANGE_LED_Pin, ENorDI);
-		HAL_Delay(500);
+		HAL_Delay(delay_value);
 		HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, ENorDI);
-		HAL_Delay(500);
+		HAL_Delay(delay_value);
 		HAL_GPIO_WritePin(BLUE_LED_GPIO_Port, BLUE_LED_Pin, ENorDI);
-		HAL_Delay(500);
+		HAL_Delay(delay_value);
 	}
 }
 

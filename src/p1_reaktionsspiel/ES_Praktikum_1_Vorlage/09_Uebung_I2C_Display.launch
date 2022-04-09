@@ -68,7 +68,7 @@
     <stringAttribute key="org.eclipse.cdt.launch.PROGRAM_NAME" value="C:\Users\prodevmo\STM32CubeIDE\workspace_1.9.0\ES_Praktikum_1_Vorlage.zip_expanded\ES_Praktikum_1_Vorlage\Debug\ES_Praktikum_1_Vorlage.elf"/>
     <stringAttribute key="org.eclipse.cdt.launch.PROJECT_ATTR" value="ES_Praktikum_1_Vorlage"/>
     <booleanAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_AUTO_ATTR" value="true"/>
-    <stringAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_ID_ATTR" value="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.1143281043"/>
+    <stringAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_ID_ATTR" value=""/>
     <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
         <listEntry value="/ES_Praktikum_1_Vorlage"/>
     </listAttribute>
