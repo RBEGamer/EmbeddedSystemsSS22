@@ -266,7 +266,7 @@ void start_random_timer(){
 	uint32_t rng = 0;
 	HAL_RNG_GenerateRandomNumber(&hrng, &rng);
 	//MAP 0-65536 => MIN_RND_VALUE-MAX_RND_VALUE
-	rng = ((uint16_t)rng) * (MAX_RND_VALUE - MIN_RND_VALUE) / 65536 + MIN_RND_VALUE;
+	rng =  ((uint16_t)rng) * ((MAX_RND_VALUE - MIN_RND_VALUE)/65535) + MIN_RND_VALUE;
 
 	//SET PERIOD
 	//START TIMER FIRST => INIT AGAIN WITH NEW PERIOD
