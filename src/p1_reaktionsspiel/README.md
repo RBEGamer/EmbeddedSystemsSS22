@@ -18,6 +18,17 @@ Das Display ist mit der ersten I2C Schnittstelle verbunden, somit muss dies an d
 | SDA     | PB9 (I2C1)    |
 
 
+Zusätzlich wurden weitere GPIOs für ein einfaches Abgreifen von Timer und Button-IRQ hinzugefüg.
+Diese werden später für die Laufzeitmessungen verwendet.
+
+| GPIO OUT FUNCTION | STM-DISCOVERY | LOGIC_ANALYSER_CHANNEL |
+|-------------------|---------------|------------------------|
+| TIMER_7_OUT       | PC1           | 1                      |
+| TIMER_6_OUT       | PC2           | 2                      |
+| LAUFZEITMESSUNG   | PC4           | 3                      |
+| EXTI_0 IRQ        | PC5           | 4                      |
+
+
 ## LEDs
 
 Um eine einfache Ansteuerung der LEDs zu ermöglichen, wurde diesen in den Projekteinstellungen `USER-Labels` zugewiesen.
@@ -94,6 +105,22 @@ Somit wurden drei Gruppen erstellt:
 * `1` = `EXTI 0 (BUTTONS_IRQ)`
 * `2` = `TIM6, TIM7`
 
-## IRQ MESSUNGEN
+## MESSUNGEN
+
+| GPIO OUT FUNCTION | LOGIC_ANALYSER_CHANNEL |
+|-------------------|------------------------|
+| TIMER_7_OUT       | 1                      |
+| TIMER_6_OUT       | 2                      |
+| LAUFZEITMESSUNG   | 3                      |
+| EXTI_0 IRQ        | 4                      |
+
+
+
+
+
+
+
+
+
 
 ![btn_trg](./images/btn_trg.png)
