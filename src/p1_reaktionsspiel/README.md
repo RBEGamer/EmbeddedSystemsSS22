@@ -36,9 +36,9 @@ Nach der Generierung des Codes, werden die Labels als zusätzliche Defines erste
 Jeweils mit der Port und Pin-Definition
 ```c++
 //main.cpp 275
-    	//GREEN LED
-    	HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, ENorDI);
-    	//ORANGE LED
+    //GREEN LED
+    HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, ENorDI);
+    //ORANGE LED
 	HAL_GPIO_WritePin(ORANGE_LED_GPIO_Port, ORANGE_LED_Pin, ENorDI);
 ```
 
@@ -86,10 +86,10 @@ oder durch ändern der Timer-Configuration und anschließender erneuter Initiali
 
 ```c++
 //main.cpp 266
-    	//BASIS SETUP: htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
-    	HAL_TIM_Base_Start_IT(&htim6);
+    //BASIS SETUP: htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+    HAL_TIM_Base_Start_IT(&htim6);
 	htim6.Init.Period = rng;
-    	HAL_TIM_Base_Init(&htim6);
+    HAL_TIM_Base_Init(&htim6);
 ```
 
 ## NVIC
