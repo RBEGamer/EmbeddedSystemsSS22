@@ -215,7 +215,7 @@ void EXTI0_IRQHandler(void)
   /* USER CODE BEGIN EXTI0_IRQn 1 */
 
 #ifdef DEBUG
-			HAL_GPIO_TogglePin(BTNTRG_GPIO_Port, BTNTRG_Pin);
+			HAL_GPIO_WritePin(BTNTRG_GPIO_Port, BTNTRG_Pin, GPIO_PIN_RESET);
 #endif
 
   if(status == STATUS_RANDOM_TIMER_RUNNING){

@@ -148,6 +148,10 @@ int main(void)
 #ifdef DEBUG
 			HAL_GPIO_WritePin(USERTIME_GPIO_Port, USERTIME_Pin, GPIO_PIN_SET);
 #endif
+
+#ifdef DEBUG
+			HAL_GPIO_WritePin(BTNTRG_GPIO_Port, BTNTRG_Pin, GPIO_PIN_SET);
+#endif
 			//START MEASUREMENT TIMER
 			HAL_TIM_Base_Start_IT(&htim7);
 
@@ -158,6 +162,10 @@ int main(void)
 
 #ifdef DEBUG
 			HAL_GPIO_WritePin(USERTIME_GPIO_Port, USERTIME_Pin, GPIO_PIN_RESET);
+#endif
+
+#ifdef DEBUG
+			HAL_GPIO_WritePin(BTNTRG_GPIO_Port, BTNTRG_Pin, GPIO_PIN_SET);
 #endif
 			//reaction_time_in_ms = htim7.Instance->CNT / 10;
 			//Switch off all LEDs
