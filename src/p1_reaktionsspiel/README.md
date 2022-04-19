@@ -118,8 +118,8 @@ Somit wurden drei Gruppen erstellt:
 
 | DISPLAY WERT | LOGIC_ANALYSER_MEASUREMENT |
 |--------------|----------------------------|
-| 942ms        | 954ms                      |
-| 244ms        | 246ms                      |
+| 941ms        | 954ms                      |
+| 243ms        | 246ms                      |
 
 
 Abweichungen können zustandekommen durch:
