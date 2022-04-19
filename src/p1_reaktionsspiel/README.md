@@ -112,7 +112,6 @@ Somit wurden drei Gruppen erstellt:
 | TIMER_7_OUT       | 1                      |
 | TIMER_6_OUT       | 2                      |
 | LAUFZEITMESSUNG   | 3                      |
-| EXTI_0 IRQ        | 4                      |
 
 
 ![btn_trg](./images/940ms.png)
