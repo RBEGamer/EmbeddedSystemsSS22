@@ -114,12 +114,12 @@ Somit wurden drei Gruppen erstellt:
 | LAUFZEITMESSUNG   | 3                      |
 
 
-![btn_trg](./images/940ms.png)
+![btn_trg](./images/246ms.png)
 
 | DISPLAY WERT | LOGIC_ANALYSER_MEASUREMENT |
 |--------------|----------------------------|
 | 940ms        | 954ms                      |
-| 244ms        | 243ms                      |
+| 244ms        | 246ms                      |
 
 
 Abweichungen können zustandekommen durch:
