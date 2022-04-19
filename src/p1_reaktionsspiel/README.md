@@ -115,12 +115,15 @@ Somit wurden drei Gruppen erstellt:
 | EXTI_0 IRQ        | 4                      |
 
 
+![btn_trg](./images/940ms.png)
+
+| DISPLAY WERT | LOGIC_ANALYSER_MEASUREMENT |
+|--------------|----------------------------|
+| 940ms        | 954ms                      |
+| 244ms        | 243ms                      |
 
 
+Abweichungen können zustandekommen durch:
 
-
-
-
-
-
-![btn_trg](./images/btn_trg.png)
+* Delay durch Ouput-Setzten
+* Registrierung Interrupt des Tastendrucks
