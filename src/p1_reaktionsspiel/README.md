@@ -118,7 +118,7 @@ Somit wurden drei Gruppen erstellt:
 
 | DISPLAY WERT | LOGIC_ANALYSER_MEASUREMENT |
 |--------------|----------------------------|
-| 940ms        | 954ms                      |
+| 942ms        | 954ms                      |
 | 244ms        | 246ms                      |
 
 
@@ -126,3 +126,4 @@ Abweichungen können zustandekommen durch:
 
 * Delay durch Ouput-Setzten
 * Registrierung Interrupt des Tastendrucks
+* Manuelle setzten der Trigger in Logic (Trigger verwenden)
