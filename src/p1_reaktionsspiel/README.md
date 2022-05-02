@@ -112,15 +112,18 @@ Somit wurden drei Gruppen erstellt:
 | TIMER_7_OUT       | 1                      |
 | TIMER_6_OUT       | 2                      |
 | LAUFZEITMESSUNG   | 3                      |
-| EXTI_0 IRQ        | 4                      |
 
 
+![btn_trg](./images/246ms.png)
+
+| DISPLAY WERT | LOGIC_ANALYSER_MEASUREMENT |
+|--------------|----------------------------|
+| 941ms        | 954ms                      |
+| 243ms        | 246ms                      |
 
 
+Abweichungen können zustandekommen durch:
 
-
-
-
-
-
-![btn_trg](./images/btn_trg.png)
+* Delay durch Ouput-Setzten
+* Registrierung Interrupt des Tastendrucks
+* Manuelle setzten der Trigger in Logic (Trigger verwenden)
