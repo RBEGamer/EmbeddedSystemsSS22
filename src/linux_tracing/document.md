@@ -101,10 +101,17 @@ $ echo *:* > /sys/kernel/debug/tracing/set_event
 $ trace-cmd record -e sched ./program_executable
 ```
 
+* output erklörung
+
+Die `trace-cmd` Konsolenanwendung dient nicht nur zur Aufzeichnung der Trace-Events, sondern bietet auch die Möglichkeit augezeichnetet Reports visuell darzustellen.
+Die Ausgabe erfolgt als Tabelle in der Konsole und ist somit rein Textbasiert.
+
+
+
 
 ### bpftrace
 
-Seit der Kernelversion `>4.x`, steht ein weiteres Tool mit dem Namen `bpftrace` zur Verfügung.
+Seit der Kernelversion `>4.x`, kann ein weiteres Tool mit dem Namen `bpftrace` verwendet werden.
 Dieses bietet jedoch zusätzlich eine eigene Skripsprache mit der nicht nur Aggreation, sondern auch die Eventfilter und die Verarbeitung der Ergebnisse automatisiert werden können.
 
 
@@ -121,12 +128,6 @@ $ bftrace ./biolatency.bt
 # [16K, 32K)            68 |@@@@@@@@                |
 # ...
 ```
-## Visualisierung
-
-### trace-cmd
-
-Die trace-cmd Konsolenanwendung dient nicht nur zur Aufzeichnung der Trace-Events, sondern bietet auch die Möglichkeit augezeichnetet Reports visuell darzustellen.
-Die Ausgabe erfolgt als Tabelle in der Konsole und ist somit rein Textbasiert.
 
 
 
