@@ -17,14 +17,40 @@ Die Linux-Tracing Funktionalität und die bestehenden Tools, welche im Linux-Ker
 
 # Grundlagen
 
-
+## Ringbuffer
 
 ## Debug-Filesystem
 
 * möglichkeiten
 
+```bash
+$ sudo mount -t debugfs debugfs /sys/kernel/debug
+```
+
 ## Trace Events
 
+
+Durch das Debug-Filesystem ist jetzt der Zugriff auf die Debug und insbesondere auf die Tracing-Daten möglich.
+Im Debug-Filesystem ist nach aktivierung der `tracing`-Ordner vorhanden.
+In diesem werden die verfügbaren Events in Gruppen (Ordnern) dargestellt, auf welche im späteren Verlauf reagiert werden können.
+
+
+```bash
+# GET TRACERS
+$ cat /sys/kernel/debug/tracing/available_tracers
+
+# GET AVAILABLE EVENT LIST
+$ cd /sys/kernel/debug/tracing
+$ ls -1 events/
+
+# sched
+# irq
+```
+
+### scheduler
+### IRQ
+
+## Abfangen von Events
 ### Kprobes
 
 Kprobes können dazu verwendet werden, Laufzeit und Performance-Daten des Kernels zu sammeln.
@@ -47,6 +73,20 @@ Der Linux-Kernel bringt bereits alle nötigen Funktionalitäten mit. Jedoch gibt
 ### trace-cmd
 
 ```bash
+# CHECK IF TRACING IS ENABLED
+# RUN AS SUDO
+$ mount | grep tracefs
+## => none on /sys/kernel/tracing type tracefs (rw,relatime,seclabel)
+
+# IF TRACING IS NOT ACTIVE, ENABLE IT FIRST
+
+## ONLY SCHEDULER EVENTS
+$ echo sched_wakeup >> /sys/kernel/debug/tracing/set_event
+## ALL EVENTS
+$ echo *:* > /sys/kernel/debug/tracing/set_event
+
+
+
 $ trace-cmd record -e sched ./program_executable
 ```
 

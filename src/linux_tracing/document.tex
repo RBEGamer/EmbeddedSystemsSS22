@@ -12,12 +12,17 @@ Funktionalität und die bestehenden Tools, welche im Linux-Kernel
 integriert sind, helfen so dabei bei der Identifikation von Laufzeiten,
 Nebenläufigkeiten und der Untersuchung von Latenzproblemen,
 
+\hypertarget{relevanz}{%
+\section{Relevanz}\label{relevanz}}
+
+\begin{itemize}
+\tightlist
+\item
+  multicore systeme
+\end{itemize}
+
 \hypertarget{tracing}{%
 \section{Tracing}\label{tracing}}
-
-Nachfolgend wird erleutert und an einem Beispiel demonstriert, wie das
-Linux-Tracing bei der Identifikation von Laufzeitproblemen eingesetzt
-werden kann.
 
 \hypertarget{ursprung}{%
 \section{Ursprung}\label{ursprung}}
@@ -25,17 +30,61 @@ werden kann.
 \hypertarget{grundlagen}{%
 \chapter{Grundlagen}\label{grundlagen}}
 
-\hypertarget{events}{%
-\section{Events}\label{events}}
+\hypertarget{ringbuffer}{%
+\section{Ringbuffer}\label{ringbuffer}}
+
+\hypertarget{debug-filesystem}{%
+\section{Debug-Filesystem}\label{debug-filesystem}}
+
+\begin{itemize}
+\tightlist
+\item
+  möglichkeiten
+\end{itemize}
+
+\begin{lstlisting}[language=bash]
+$ sudo mount -t debugfs debugfs /sys/kernel/debug
+\end{lstlisting}
+
+\hypertarget{trace-events}{%
+\section{Trace Events}\label{trace-events}}
+
+Durch das Debug-Filesystem ist jetzt der Zugriff auf die Debug und
+insbesondere auf die Tracing-Daten möglich. Im Debug-Filesystem ist nach
+aktivierung der \passthrough{\lstinline!tracing!}-Ordner vorhanden. In
+diesem werden die verfügbaren Events in Gruppen (Ordnern) dargestellt,
+auf welche im späteren Verlauf reagiert werden können.
+
+\begin{lstlisting}[language=bash]
+# GET TRACERS
+$ cat /sys/kernel/debug/tracing/available_tracers
+
+# GET AVAILABLE EVENT LIST
+$ cd /sys/kernel/debug/tracing
+$ ls -1 events/
+
+# sched
+# irq
+\end{lstlisting}
+
+\hypertarget{scheduler}{%
+\subsection{scheduler}\label{scheduler}}
+
+\hypertarget{irq}{%
+\subsection{IRQ}\label{irq}}
+
+\hypertarget{abfangen-von-events}{%
+\section{Abfangen von Events}\label{abfangen-von-events}}
 
 \hypertarget{kprobes}{%
-\section{Kprobes}\label{kprobes}}
+\subsection{Kprobes}\label{kprobes}}
 
 Kprobes können dazu verwendet werden, Laufzeit und Performance-Daten des
 Kernels zu sammeln. Der Vorteil and diesen ist, dass diese Daten ohne
 Unterbrechnung der Ausführung auf CPU-Instruktions-Ebene aggregiert
 werden können, anders wie bei dem Debuggen eines Programms mittels
-Breakpoints.
+Breakpoints. Ein weiterer Vorteil ist, dass das Registrieren der Kprobes
+dynamisch zur Laufzeit und ohne Änderungen des Programmcodes geschieht.
 
 \hypertarget{cpu-traps}{%
 \subsection{CPU-Traps}\label{cpu-traps}}
@@ -55,11 +104,37 @@ die eine visuelle Darstellung der aufgezeichneten Events ermöglichen.
 \hypertarget{trace-log-aufzeichnung}{%
 \section{Trace-Log Aufzeichnung}\label{trace-log-aufzeichnung}}
 
-\hypertarget{ftrace}{%
-\subsection{ftrace}\label{ftrace}}
+\hypertarget{trace-cmd}{%
+\subsection{trace-cmd}\label{trace-cmd}}
+
+\begin{lstlisting}[language=bash]
+# CHECK IF TRACING IS ENABLED
+# RUN AS SUDO
+$ mount | grep tracefs
+## => none on /sys/kernel/tracing type tracefs (rw,relatime,seclabel)
+
+# IF TRACING IS NOT ACTIVE, ENABLE IT FIRST
+
+## ONLY SCHEDULER EVENTS
+$ echo sched_wakeup >> /sys/kernel/debug/tracing/set_event
+## ALL EVENTS
+$ echo *:* > /sys/kernel/debug/tracing/set_event
+
+
+
+$ trace-cmd record -e sched ./program_executable
+\end{lstlisting}
 
 \hypertarget{visualisierung}{%
 \section{Visualisierung}\label{visualisierung}}
+
+\hypertarget{trace-cmd-1}{%
+\subsection{trace-cmd}\label{trace-cmd-1}}
+
+Die trace-cmd Konsolenanwendung dient nicht nur zur Aufzeichnung der
+Trace-Events, sondern bietet auch die Möglichkeit augezeichnetet Reports
+visuell darzustellen. Die Ausgabe erfolgt als Tabelle in der Konsole und
+ist somit rein Textbasiert.
 
 \hypertarget{kernelshark}{%
 \subsection{Kernelshark}\label{kernelshark}}
