@@ -1,168 +1,308 @@
-\documentclass[conference]{IEEEtran}
-\IEEEoverridecommandlockouts
-% The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
-\usepackage{cite}
-\usepackage{amsmath,amssymb,amsfonts}
-\usepackage{algorithmic}
-\usepackage{graphicx}
-\usepackage{textcomp}
-\usepackage{xcolor}
-\usepackage[ngerman]{babel}
-\usepackage[acronym]{glossaries}
-%\usepackage{setspace}
-\makeglossaries
-\newacronym{sg}{SG}{Serious Games}
-%BASH
-\usepackage{listings}
-\lstset{basicstyle=\ttfamily,
-  showstringspaces=false,
-  commentstyle=\color{red},
-  keywordstyle=\color{blue}
-}
 
 
-
-\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
-    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
-\begin{document}
-
-\title{Embedded System - Linux Tracing\\
-%{\footnotesize \textsuperscript{*}Wissenschaftliches Arbeiten WS2021/2022 Fachhochschule Aachen}
-%\thanks{Identify applicable funding agency here. If none, delete this.}
-}
-
-
-\author{\IEEEauthorblockN{Marcel Ochsendorf}
-\IEEEauthorblockA{\textit{Embedded Systems} \\
-\textit{Fachbereich 5 Elektrotechnik und Informationstechnik}\\ Fachhochschule Aachen, Deutschland}
-\and
-\IEEEauthorblockN{Muhammed Parlak}
-\IEEEauthorblockA{\textit{Embedded Systems} \\
-\textit{Fachbereich 5 Elektrotechnik und Informationstechnik}\\ Fachhochschule Aachen, Deutschland}
-}
-
-\maketitle
-
-%-----------------------------------------------------------------------------------------------------------------------------------------------
-% \gls{uscf}
-\begin{abstract}
-
-\end{abstract}
-
-\begin{IEEEkeywords}
-Linux Kernel Tracing, Embedded System, Embedded Programming
-\end{IEEEkeywords}
-
-\section{Einleitung}
-Tracing ist die spezielle Verwendung der Protokollierung zur Aufzeichnung von Informationen über den Ausführungsablauf eines Programms.
-Oft werden mit eigenständig hinzugefügte Print-Messages der Code debuggt. Somit verfolgt man die Anweisungen mit einem eigenem tracing-System.
-Linux bringt einige eigenständige Tools mit, mit denen es möglich ist Vorgänge innerhalb von einem Embedded-System nachvollziehen und analysieren zu können.
-Die Linux-Tracing Funktionalität und die bestehenden Tools, welche im Linux-Kernel integriert sind, helfen so dabei bei der Identifikation von Laufzeiten, Nebenläufigkeiten  und der Untersuchung von Latenzproblemen,
-%-------------------------------------------------------------------------------------
-
-\subsection{Tracing}
-
-
-%ERLÄUTERUNGEN
-Nachfolgend wird erleutert und an einem Beispiel demonstriert, wie das Linux-Tracing bei der Identifikation von Laufzeitproblemen eingesetzt werden kann.
-
-%-----------------------------------------------------------------------------------------------------------------------------------------------
-%METHODIKEN
-
-\subsection{Ursprung}
-
-
-\section{Grundlagen}
-
-\subsection{Events}
-
-\subsection{Kprobes}
-
-Kprobes können dazu verwendet werden, Laufzeit und Performance-Daten des Kernels zu sammeln.
-Der Vorteil and diesen ist, dass diese Daten ohne Unterbrechnung der Ausführung auf CPU-Instruktions-Ebene aggregiert werden können, anders wie bei dem Debuggen eines Programms mittels Breakpoints.
-
-\subsubsection{CPU-Traps}
-
-
-\begin{lstlisting}[language=bash,caption={bash version}]
-    #!/bin/bash
-
-\end{lstlisting}
-
-\section{Tracing auf Mikrokontrollern}
-%-----------------------------------------------------------------------------------------------------------------------------------------------
-%SHADER
-
-\section{Tools}
-
-Allgemein sind keine speziellen Programme notwending um die Laufzeiteigenschaften eines Programms aufzuzeichnen.
-Der Linux-Kernel bringt bereits alle nötigen Funktionalitäten mit. Jedoch gibt es Tools die eine visuelle Darstellung der aufgezeichneten Events ermöglichen.
-
-
-\subsection{Trace-Log Aufzeichnung}
-
-\subsubsection{ftrace}
-
-
-
-\subsection{Visualisierung}
-
-\subsubsection{Kernelshark}
-
-\begin{figure}[htbp]
-\centerline{\includegraphics[width=8cm]{kernelshark.png}}
-\caption{Kernelshark}
-\label{shadertool1_fig}
-\end{figure}
-
-
-
-
-
-\section{Interpretation des Kernel-Trace Ergebnisses}
-
-%-----------------------------------------------------------------------------------------------------------------------------------------------
-%VERGLEICHE
-
-\section{Beispiel der Identifikation von Laufzeitproblemen}
-
-\subsection{Ausgangsszenario}
-
-Als Ausgangspunkt dieses Beispiels, soll das Laufzeitverhalten eines Programms auf einem Linux-System analysiert werden.
-Die zugrunde liegende Software wurde bisher nur auf einem Linux-Realtime Kernel verwendet,
-jedoch erfordert die Implementation neuer Features eine neuere Kernel-Version, welche noch nicht als RT-Version auf dem System zur Verfügung steht.
-Somit soll ermittelt werden, ob die unmodifizierte Software eins zu eins auf dem neuen System lauffähig ist und die Laufzeitandorderungen erfüllt.
-
-
-\subsection{Aufzeichnung mittels ftrace}
-
-\subsection{Visualisierung und Beurteilung des Trace-Logs mittels kernelshark}
-%-----------------------------------------------------------------------------------------------------------------------------------------------
-%FAZIT
-
-\section{Fazit}
-
-
-
-
-%-----------------------------------------------------------------------------------------------------------------------------------------------
-\begingroup
-
-%\setstretch{1.05}
-\begin{thebibliography}{00}
-\bibitem{eduxrvrar2020usa} Thomas Alsop: "Leading applications of immersive technologies in the education sector in the next two years according to XR/AR/VR/MR industry
-experts in the United States in 2020", in: Internetseite Statista, URL: https://www.statista.com/statistics/1185078/applications-immersive-technologies-xr-ar-vr-mr-education/, Abruf am 17.11.2021.
-
-\vskip 0.05in
-\bibitem{evallearningmixedreality2020} Y. M. Tang; K. M. Au; H. C. W. Lau; G. T. S. Ho, C. H. Wu; "Evaluating the effectiveness of learning design with mixed reality (MR) in higher education", Springer-Verlag London Ltd, 28.02.2020
-
-
-
-
-
-\end{thebibliography}
-\endgroup
-
-\end{document}
-
-
+\documentclass [
+    % 	draft		% falls ohne Bilder gedruckt werden soll (Entwurf)
+        ]{scrbook}	% KOMA Klasse für Bücher
+    
+    %%MOD%%
+    \usepackage{fhacmb}	% Style-File für Titelblatt. Ggf. bei Enning holen
+    
+    \KOMAoptions{
+        parskip=true,		% Absätze mit Abstand
+        fontsize=12pt,		% Standardschriftgröße
+        toc=flat,		% Inhaltsverzeichnis ohne Einzüge
+        twoside=false,		% Einseitig setzen
+        numbers=nodotatend,	% Nummerierungen nicht mit Punkt abschließen
+    % die folgenden Optionen nehmen die entsprechende Dinge ins Inhaltsverzeichnis auf
+    % mit der bei texlive vorhandenen aktuellen Version von pdflatex funkioniert es nicht mehr
+    % (bekannter Bug)
+        toc=bibliography,	% Literaturverzeichnis ins Inhaltsverzeichnis
+        toc=listof,		% Abbildung- und Tabellenverzeichnis ins Inhaltsverzeichnis
+        toc=index,		% Stichwortverzeichnis ins Inhaltsverzeichnis
+        }
+    %
+    
+    \usepackage{amsmath,amssymb}
+    
+    
+    
+    
+    
+    
+    \IfFileExists{xcolor.sty}{
+        \RequirePackage{xcolor}
+    }{
+        \RequirePackage{color}
+    }
+    
+    
+    \providecommand{\tightlist}{%
+      \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+    
+    
+    
+    \usepackage{footnotebackref}
+    \usepackage{graphicx}
+    
+    
+    
+    
+    
+    
+    %%
+    %% added
+    %%
+    
+    %
+    % language specification
+    %
+    % If no language is specified, use English as the default main document language.
+    %
+    %%MOD%%
+    
+    
+    
+    %
+    % for the background color of the title page
+    %
+    
+    %
+    % break urls
+    %
+    \PassOptionsToPackage{hyphens}{url}
+    
+    %
+    % When using babel or polyglossia with biblatex, loading csquotes is recommended
+    % to ensure that quoted texts are typeset according to the rules of your main language.
+    %
+    \usepackage{csquotes}
+    
+    
+    %
+    % variables for title, author and date
+    %
+    \usepackage{titling}
+    
+    
+    
+    
+    
+    %
+    % ADD SYNTAX HIGHLIGHTING
+    %
+    \input{syntax_highlight}
+    
+    
+    
+    
+    %%%%%% Immer benötigte Packages
+    %
+    \usepackage[T1]{fontenc}		% sonst funktioniert die Silbentrennung bei Umlauten nicht
+    \usepackage[utf8]{inputenc}	% Eingabedekodierung. Ermöglicht Umlaute. Achtung: Unbedingt mit Betreuer
+                    % Verwendung der Umlaute-Eingabemethode absprechen. Im Zweifel \"O für Ö
+    \usepackage[ngerman]{babel}	% Silbentrennung und Sprachanpassung
+    \usepackage{blindtext}		% Blindtext
+    
+    %\usepackage[hidelinks]{hyperref}		% Sprungmarken, z.B. im Inhaltsverzeichnis auf Textpassagen
+    
+    
+    
+    \usepackage{graphicx}		% Definiert o.a. \includegraphics
+    \usepackage[export]{adjustbox}
+    \let\oldincludegraphics\includegraphics
+    \renewcommand{\includegraphics}[2][]{%
+      \oldincludegraphics[#1,max width=\linewidth]{#2}}
+    
+    
+    
+    \usepackage{textcomp}		% Sonst funktioniert z.B. \texteuro nicht
+    \usepackage{scrlayer-scrpage}	% Package zum Definieren der Kopf- und Fußzeilen
+    \usepackage{amsmath,amssymb}		% Muss sein
+    \usepackage{mathrsfs} 	% Weitere Mathematik-Symbole, z.B. Laplace-L
+    %
+    %%%%% Anpassung an Formatvorlagen des Fachbereichs
+    %
+    \usepackage{helvet}		% Serifenlose Schrift ähnlich Arial
+    \renewcommand{\familydefault}{\sfdefault}	% als Standardschrift serifenlose Schrift verwenden
+    %
+    \usepackage{geometry} 		% Ränder direkt einstellen
+    \geometry{a4paper, top=20mm, left=30mm, right=20mm, bottom=25mm} % nach Vorgabe
+    \linespread{1.25} 		% Zeilenabstand nach Vorgabe
+    %
+    \usepackage{chngcntr}		% Ändert Verhalten von Countern
+    \counterwithout{figure}{section}	% Figure-Nummerierung nicht bei section-Wechsel zurücksetzen
+    \renewcommand{\thefigure}{\textbf\thechapter-\arabic{figure}}	% im Stil 3-2
+    %
+    %%%% für das Erzeugen von Grafiken mit Zeichenbefehlen
+    %
+    \usepackage{tikz}		% Grundpaket
+    \usetikzlibrary{shapes,arrows}	% einige Symbolpackages
+    \usepackage{tikz-cd}		% einige Symbolpackages
+    
+    %
+    %%%% TABELLEN
+    %
+    \usepackage{colortbl}		% für die Hintergrundfarbe von Tabellen
+    \usepackage{paralist}		% Weitere Nummeriungsoptionen, z.b. alphabetisch für enumerate/itemize
+    
+    \usepackage{longtable}% FOR PANDOC TABLE GENERATOR
+    \usepackage{booktabs} % FOR TOPRULE MIDRULE
+    
+    
+    %
+    %%%% UNORDERED LISTS
+    %
+    \renewcommand{\labelitemii}{$\circ$} % Bullets für itemize-Listen
+    
+    
+    
+    %
+    %%%% PAGE AND FIGURE NUMBERING
+    %
+    \usepackage{chngcntr}		% Ändert Verhalten von Countern
+    \counterwithout{figure}{section}	% Figure-Nummerierung nicht bei section-Wechsel zurücksetzen
+    \renewcommand{\thefigure}{\textbf\thechapter-\arabic{figure}}	% im Stil 3-2
+    
+    %\usepackage{subfig}		% Unterfigures mit eigenen Bildunterschriften
+    
+    %\setcounter{tocdepth}{3} % SHOW SUB SUB SUB SUB SECTIONS
+    
+    
+    %
+    %%%% acronyms
+    %
+    
+    
+    
+    \usepackage{pdflscape}
+    
+    
+    
+    
+    \usepackage[acronym]{glossaries}
+    \makeglossaries
+    
+    \input{thesis_acronyms}
+    %
+    %%%%%%%%%%  Angaben für Titelseite %%%%%%%%%%%%%%%%%%%%%%
+    %
+    \input{titleinformation}
+    
+    
+    
+    
+    %\hypersetup{draft} %DISBALE HYPERLINKS
+    % https://charly-lersteau.com/posts/2019-12-26-latex-hyperref-error-pdfendlink/
+    %\usepackage{etoolbox}
+    
+    %\makeatletter
+    %\patchcmd\@combinedblfloats{\box\@outputbox}{\unvbox\@outputbox}{}{%
+     %   \errmessage{\noexpand\@combinedblfloats could not be patched}%
+    %}%
+    %\makeatother
+    
+    \usepackage{rotating}
+    
+    \definecolor{LightCyan}{rgb}{0.88,1,1}
+    \definecolor{Gray}{gray}{0.9}
+    \usepackage[first=0,last=9]{lcg}
+    \newcommand{\ra}{\rand0.\arabic{rand}}
+    
+    
+    % ADD PAGE PACING FOR BETTER READABLE TABLES
+    \newcolumntype{g}{>{\columncolor{Gray}}c}
+    \renewcommand*{\arraystretch}{2} %2.0 IS  THE SPACING
+    
+    \begin{document}
+    
+    
+    
+    %%MOD%%
+    % Einige Anpassungen müssen nach \begin{document} stehen !!
+    \renewcaptionname{ngerman}{\figurename}{\textbf Bild} 	% Bild ... statt Abbildung ...
+    \renewcaptionname{ngerman}{\contentsname}{Inhalt}% Inhalt statt Inhaltsverzeichnis
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Titel im FH Style
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \fhacmbtitle{\includegraphics[height=4cm]{fh_logo}}{5pt}{5pt}
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Erklärung / Geheimhaltung
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %\frontmatter 	% Wenn der Hauptteil mit Seite 1 beginnen soll
+    \pagestyle{plain}
+    
+    
+    
+    
+    
+    
+    
+    
+    \frontmatter
+    
+    
+    
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Inhaltsverzeichnis
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \tableofcontents
+    
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % CONTENT
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \mainmatter	% Wenn der Hauptteil mit Seite 1 beginnen soll
+    \pagestyle{scrheadings}
+    %%%%%%%%%%%%%%% Anpassung des Seitenstils an FH-Layoutvorschrift %%%%%%%%%%%%
+    \renewcommand{\chaptermark}[1]{\markboth{\thechapter\hspace{1cm}#1}{}}	% Kapitel für Headerzeile neu definieren (ohne Nummer)
+    \chead{}		% Header Mitte löschen
+    \ihead{\leftmark}	% Kapitelbezeichnung links setzen
+    \renewcommand{\headfont}{\bfseries}	% Bold-Font für Headerzeile verwenden
+    \setheadsepline{0.5pt}
+    
+    
+    
+    \input{document}
+    
+    
+    
+    
+    
+    
+    
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % REFERENZEN
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %% Verschiedene Versionen, nach DIN 1505 zu zitieren
+    \bibliographystyle{plaindin}
+    %\interlinepenalty=10000
+    \bibliography{references}
+    
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % ACRONYM VERZEICHNIS
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \printglossaries
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % ABBILDUNGSVERZEICHNIS
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \listoffigures
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % ABBILDUNGSVERZEICHNIS
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \listoftables
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % ANHANG
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %\newpage
+    %\appendix % ANHANG EINLEITEN
+    %\input{thesis_attachments}
+    
+    
+    \end{document}
+    

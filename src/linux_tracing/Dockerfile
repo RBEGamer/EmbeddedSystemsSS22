@@ -6,9 +6,9 @@ RUN apt update
 RUN apt install -y texlive-full texmaker pandoc sed nano
 
 RUN apt install -y build-essential
-RUN apt install -y haskell-platform
-RUN apt install -y cabal-install
-RUN apt install -y python3
+#RUN apt install -y haskell-platform
+#RUN apt install -y cabal-install
+#RUN apt install -y python3
 
 #RUN apt install locales
 #RUN locale-gen en_US.utf8

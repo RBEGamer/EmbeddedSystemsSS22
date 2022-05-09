@@ -1,0 +1,99 @@
+\hypertarget{einleitung}{%
+\chapter{Einleitung}\label{einleitung}}
+
+Tracing ist die spezielle Verwendung der Protokollierung zur
+Aufzeichnung von Informationen über den Ausführungsablauf eines
+Programms. Oft werden mit eigenständig hinzugefügte Print-Messages der
+Code debuggt. Somit verfolgt man die Anweisungen mit einem eigenem
+tracing-System. Linux bringt einige eigenständige Tools mit, mit denen
+es möglich ist Vorgänge innerhalb von einem Embedded-System
+nachvollziehen und analysieren zu können. Die Linux-Tracing
+Funktionalität und die bestehenden Tools, welche im Linux-Kernel
+integriert sind, helfen so dabei bei der Identifikation von Laufzeiten,
+Nebenläufigkeiten und der Untersuchung von Latenzproblemen,
+
+\hypertarget{tracing}{%
+\section{Tracing}\label{tracing}}
+
+Nachfolgend wird erleutert und an einem Beispiel demonstriert, wie das
+Linux-Tracing bei der Identifikation von Laufzeitproblemen eingesetzt
+werden kann.
+
+\hypertarget{ursprung}{%
+\section{Ursprung}\label{ursprung}}
+
+\hypertarget{grundlagen}{%
+\chapter{Grundlagen}\label{grundlagen}}
+
+\hypertarget{events}{%
+\section{Events}\label{events}}
+
+\hypertarget{kprobes}{%
+\section{Kprobes}\label{kprobes}}
+
+Kprobes können dazu verwendet werden, Laufzeit und Performance-Daten des
+Kernels zu sammeln. Der Vorteil and diesen ist, dass diese Daten ohne
+Unterbrechnung der Ausführung auf CPU-Instruktions-Ebene aggregiert
+werden können, anders wie bei dem Debuggen eines Programms mittels
+Breakpoints.
+
+\hypertarget{cpu-traps}{%
+\subsection{CPU-Traps}\label{cpu-traps}}
+
+\hypertarget{tracing-auf-mikrokontrollern}{%
+\chapter{Tracing auf
+Mikrokontrollern}\label{tracing-auf-mikrokontrollern}}
+
+\hypertarget{tools}{%
+\chapter{Tools}\label{tools}}
+
+Allgemein sind keine speziellen Programme notwending um die
+Laufzeiteigenschaften eines Programms aufzuzeichnen. Der Linux-Kernel
+bringt bereits alle nötigen Funktionalitäten mit. Jedoch gibt es Tools
+die eine visuelle Darstellung der aufgezeichneten Events ermöglichen.
+
+\hypertarget{trace-log-aufzeichnung}{%
+\section{Trace-Log Aufzeichnung}\label{trace-log-aufzeichnung}}
+
+\hypertarget{ftrace}{%
+\subsection{ftrace}\label{ftrace}}
+
+\hypertarget{visualisierung}{%
+\section{Visualisierung}\label{visualisierung}}
+
+\hypertarget{kernelshark}{%
+\subsection{Kernelshark}\label{kernelshark}}
+
+\begin{figure}
+\centering
+\includegraphics{images/kernelshark.png}
+\caption{Kernelshark \label{kernelshark}}
+\end{figure}
+
+\hypertarget{interpretation-des-kernel-trace-ergebnisses}{%
+\chapter{Interpretation des Kernel-Trace
+Ergebnisses}\label{interpretation-des-kernel-trace-ergebnisses}}
+
+\hypertarget{beispiel-der-identifikation-von-laufzeitproblemen}{%
+\chapter{Beispiel der Identifikation von
+Laufzeitproblemen}\label{beispiel-der-identifikation-von-laufzeitproblemen}}
+
+\hypertarget{ausgangsszenario}{%
+\section{Ausgangsszenario}\label{ausgangsszenario}}
+
+Als Ausgangspunkt dieses Beispiels, soll das Laufzeitverhalten eines
+Programms auf einem Linux-System analysiert werden. Die zugrunde
+liegende Software wurde bisher nur auf einem Linux-Realtime Kernel
+verwendet, jedoch erfordert die Implementation neuer Features eine
+neuere Kernel-Version, welche noch nicht als RT-Version auf dem System
+zur Verfügung steht. Somit soll ermittelt werden, ob die unmodifizierte
+Software eins zu eins auf dem neuen System lauffähig ist und die
+Laufzeitandorderungen erfüllt.
+
+\hypertarget{aufzeichnung-mittels-ftrace}{%
+\section{Aufzeichnung mittels
+ftrace}\label{aufzeichnung-mittels-ftrace}}
+
+\hypertarget{visualisierung-und-beurteilung-des-trace-logs-mittels-kernelshark}{%
+\section{Visualisierung und Beurteilung des Trace-Logs mittels
+kernelshark}\label{visualisierung-und-beurteilung-des-trace-logs-mittels-kernelshark}}

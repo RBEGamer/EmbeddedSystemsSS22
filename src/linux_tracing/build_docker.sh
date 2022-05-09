@@ -1,11 +1,11 @@
 #!/bin/bash
 
-if [[ "$(docker images -q latexmod:latest 2> /dev/null)" == "" ]]; then
-  echo "latexmod:latest IMAGE BUILD STARTED"
-  docker build -t latexmod:latest .
+if [[ "$(docker images -q markdownlatex:latest 2> /dev/null)" == "" ]]; then
+  echo "markdownlatex:latest IMAGE BUILD STARTED"
+  docker build -t markdownlatex:latest .
 else
- echo "latexmod:latest IMAGE EXISTS; NO BUILD REQUIRED"
+ echo "markdownlatex:latest IMAGE EXISTS; NO BUILD REQUIRED"
 fi
 
 
-docker run -i --rm -v "$(pwd)":/var/thesis latexmod
+docker run -i --rm -v "$(pwd)":/var/thesis markdownlatex
