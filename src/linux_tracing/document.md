@@ -47,10 +47,15 @@ $ ls -1 events/
 # irq
 ```
 
-### scheduler
+### Scheduler
 ### IRQ
 
 ## Abfangen von Events
+
+```bash
+ $ cd /sys/kernel/debug/tracing
+ $ echo 1 > events/sched/enable
+
 ### Kprobes
 
 Kprobes können dazu verwendet werden, Laufzeit und Performance-Daten des Kernels zu sammeln.
@@ -114,6 +119,41 @@ Die zugrunde liegende Software wurde bisher nur auf einem Linux-Realtime Kernel 
 jedoch erfordert die Implementation neuer Features eine neuere Kernel-Version, welche noch nicht als RT-Version auf dem System zur Verfügung steht.
 Somit soll ermittelt werden, ob die unmodifizierte Software eins zu eins auf dem neuen System lauffähig ist und die Laufzeitandorderungen erfüllt.
 
+Das System besteht hier aus einem `RaspberryPi 4B` mit einer angeschlossenen LED am GPIO-Port `25`
+und zu testende Programm lässt diese dabei in 100ms Abständen Blinken.
+
+Für den Test wurde als RT Kernel die Version `4.19.59-rt23-v7l+` verwendet, welche nicht alle Funktionaltitäten des aktuellen `5.15` Kernel besitzt.
+In diesem fiktiven Beispiel, wird die `systemd-networking` Funktionalität für das Batman-Prokoll benötigt, welche den Grund für die Umstellung darstellt und nicht trivial in den `4.x` Kernel integriert werden kann.
+
+```c++
+#include <iostream>
+#include <wiringPi.h>
+#include <csignal>
+using namespace std;
+
+void signal_callback_handler(int signum) {
+
+}
+
+int main(int argc, char *argv[])
+{
+    //REGISTER SIGNAL HANDLER
+    signal(SIGINT, signal_callback_handler);
+
+    wiringPiSetup();			// Setup the library
+    pinMode(0, OUTPUT);		// Configure GPIO0 as an output
+    pinMode(1, INPUT);		// Configure GPIO1 as an input
+    bool state = false;
+
+    while(1)
+    {
+        state = !state;
+	    digitalWrite(0, state);
+        delay(500);
+    }
+	return 0;
+}
+```
 
 ## Aufzeichnung mittels ftrace
 

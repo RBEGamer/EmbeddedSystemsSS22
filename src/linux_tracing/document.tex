@@ -68,7 +68,7 @@ $ ls -1 events/
 \end{lstlisting}
 
 \hypertarget{scheduler}{%
-\subsection{scheduler}\label{scheduler}}
+\subsection{Scheduler}\label{scheduler}}
 
 \hypertarget{irq}{%
 \subsection{IRQ}\label{irq}}
@@ -76,38 +76,32 @@ $ ls -1 events/
 \hypertarget{abfangen-von-events}{%
 \section{Abfangen von Events}\label{abfangen-von-events}}
 
-\hypertarget{kprobes}{%
-\subsection{Kprobes}\label{kprobes}}
-
-Kprobes können dazu verwendet werden, Laufzeit und Performance-Daten des
-Kernels zu sammeln. Der Vorteil and diesen ist, dass diese Daten ohne
-Unterbrechnung der Ausführung auf CPU-Instruktions-Ebene aggregiert
-werden können, anders wie bei dem Debuggen eines Programms mittels
-Breakpoints. Ein weiterer Vorteil ist, dass das Registrieren der Kprobes
-dynamisch zur Laufzeit und ohne Änderungen des Programmcodes geschieht.
-
-\hypertarget{cpu-traps}{%
-\subsection{CPU-Traps}\label{cpu-traps}}
-
-\hypertarget{tracing-auf-mikrokontrollern}{%
-\chapter{Tracing auf
-Mikrokontrollern}\label{tracing-auf-mikrokontrollern}}
-
-\hypertarget{tools}{%
-\chapter{Tools}\label{tools}}
-
-Allgemein sind keine speziellen Programme notwending um die
-Laufzeiteigenschaften eines Programms aufzuzeichnen. Der Linux-Kernel
-bringt bereits alle nötigen Funktionalitäten mit. Jedoch gibt es Tools
-die eine visuelle Darstellung der aufgezeichneten Events ermöglichen.
-
-\hypertarget{trace-log-aufzeichnung}{%
-\section{Trace-Log Aufzeichnung}\label{trace-log-aufzeichnung}}
-
-\hypertarget{trace-cmd}{%
-\subsection{trace-cmd}\label{trace-cmd}}
-
 \begin{lstlisting}[language=bash]
+ $ cd /sys/kernel/debug/tracing
+ $ echo 1 > events/sched/enable
+
+### Kprobes
+
+Kprobes können dazu verwendet werden, Laufzeit und Performance-Daten des Kernels zu sammeln.
+Der Vorteil and diesen ist, dass diese Daten ohne Unterbrechnung der Ausführung auf CPU-Instruktions-Ebene aggregiert werden können, anders wie bei dem Debuggen eines Programms mittels Breakpoints.
+Ein weiterer Vorteil ist, dass das Registrieren der Kprobes dynamisch zur Laufzeit und ohne Änderungen des Programmcodes geschieht.
+
+### CPU-Traps
+
+
+# Tracing auf Mikrokontrollern
+
+# Tools
+
+Allgemein sind keine speziellen Programme notwending um die Laufzeiteigenschaften eines Programms aufzuzeichnen.
+Der Linux-Kernel bringt bereits alle nötigen Funktionalitäten mit. Jedoch gibt es Tools die eine visuelle Darstellung der aufgezeichneten Events ermöglichen.
+
+
+## Trace-Log Aufzeichnung
+
+### trace-cmd
+
+```bash
 # CHECK IF TRACING IS ENABLED
 # RUN AS SUDO
 $ mount | grep tracefs
@@ -128,8 +122,8 @@ $ trace-cmd record -e sched ./program_executable
 \hypertarget{visualisierung}{%
 \section{Visualisierung}\label{visualisierung}}
 
-\hypertarget{trace-cmd-1}{%
-\subsection{trace-cmd}\label{trace-cmd-1}}
+\hypertarget{trace-cmd}{%
+\subsection{trace-cmd}\label{trace-cmd}}
 
 Die trace-cmd Konsolenanwendung dient nicht nur zur Aufzeichnung der
 Trace-Events, sondern bietet auch die Möglichkeit augezeichnetet Reports
@@ -164,6 +158,50 @@ neuere Kernel-Version, welche noch nicht als RT-Version auf dem System
 zur Verfügung steht. Somit soll ermittelt werden, ob die unmodifizierte
 Software eins zu eins auf dem neuen System lauffähig ist und die
 Laufzeitandorderungen erfüllt.
+
+Das System besteht hier aus einem
+\passthrough{\lstinline!RaspberryPi 4B!} mit einer angeschlossenen LED
+am GPIO-Port \passthrough{\lstinline!25!} und zu testende Programm lässt
+diese dabei in 100ms Abständen Blinken.
+
+Für den Test wurde als RT Kernel die Version
+\passthrough{\lstinline!4.19.59-rt23-v7l+!} verwendet, welche nicht alle
+Funktionaltitäten des aktuellen \passthrough{\lstinline!5.15!} Kernel
+besitzt. In diesem fiktiven Beispiel, wird die
+\passthrough{\lstinline!systemd-networking!} Funktionalität für das
+Batman-Prokoll benötigt, welche den Grund für die Umstellung darstellt
+und nicht trivial in den \passthrough{\lstinline!4.x!} Kernel integriert
+werden kann.
+
+\begin{lstlisting}[language={C++}]
+#include <iostream>
+#include <wiringPi.h>
+#include <csignal>
+using namespace std;
+
+void signal_callback_handler(int signum) {
+
+}
+
+int main(int argc, char *argv[])
+{
+    //REGISTER SIGNAL HANDLER
+    signal(SIGINT, signal_callback_handler);
+
+    wiringPiSetup();            // Setup the library
+    pinMode(0, OUTPUT);     // Configure GPIO0 as an output
+    pinMode(1, INPUT);      // Configure GPIO1 as an input
+    bool state = false;
+
+    while(1)
+    {
+        state = !state;
+        digitalWrite(0, state);
+        delay(500);
+    }
+    return 0;
+}
+\end{lstlisting}
 
 \hypertarget{aufzeichnung-mittels-ftrace}{%
 \section{Aufzeichnung mittels
