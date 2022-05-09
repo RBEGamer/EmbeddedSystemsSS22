@@ -24,6 +24,7 @@ Die Linux-Tracing Funktionalität und die bestehenden Tools, welche im Linux-Ker
 * möglichkeiten
 
 ```bash
+#ENABLE DEBUG FS
 $ sudo mount -t debugfs debugfs /sys/kernel/debug
 ```
 
@@ -91,7 +92,7 @@ $ echo sched_wakeup >> /sys/kernel/debug/tracing/set_event
 $ echo *:* > /sys/kernel/debug/tracing/set_event
 
 
-
+# RECORD
 $ trace-cmd record -e sched ./program_executable
 ```
 
@@ -154,7 +155,7 @@ int main(int argc, char *argv[])
 ```
 
 Für den Test wurde als RT Kernel die Version `4.19.59-rt23-v7l+` verwendet, welche nicht alle Funktionaltitäten des aktuellen `5.10` Kernel besitzt.
-In diesem fiktiven Beispiel, wird die `systemd-networking` Funktionalität für das Batman-Prokoll benötigt, welche den Grund für die Umstellung darstellt und nicht trivial in den `4.x` Kernel integriert werden kann.
+In diesem fiktiven Beispiel, wird die `systemd-networking >V.248` Funktionalität für das Batman-Prokoll benötigt, welche den Grund für die Umstellung darstellt und nicht trivial in den `4.x` Kernel integriert werden kann.
 
 Die Messungen wurden zuerst auf dem aktuellen `5.10 LTS` Kernel aufgezeichnet und im Anschluss wurde der RT-Kernel auf einem anderen System per Cross-Compilation aus dem `rpi-4.19.y-rt` Branch des `raspberrypi/linux` Repository gebaut.
 Dieser Schritt war notwendig, da es kein fertiges RT-Kernel Image zur Verfügung stand.
@@ -163,6 +164,12 @@ Die erzeugten Dateien wurden dann auf die Boot-Partition der SD Karte geschriebe
 
 
 ## Aufzeichnung Trace-Log
+
+Zur Aufzeichnung des Trace-Logs wurde `trace-cmd` verwendet. Auf dem Zielsystem wurde dabei nur die Aufzeichnung vorgenommen und die Analyse der Logs erfolgte auf einem seperaten System.
+
+```bash
+trace-cmd record -e sched ./blink
+``` 
 
 ## Visualisierung und Beurteilung des Trace-Logs mittels kernelshark
 
