@@ -12,6 +12,13 @@
 %\usepackage{setspace}
 \makeglossaries
 \newacronym{sg}{SG}{Serious Games}
+%BASH
+\usepackage{listings}
+\lstset{basicstyle=\ttfamily,
+  showstringspaces=false,
+  commentstyle=\color{red},
+  keywordstyle=\color{blue}
+}
 
 
 
@@ -25,13 +32,13 @@
 }
 
 
-\author{\IEEEauthorblockN{1\textsuperscript{st} Marcel Ochsendorf}
-\IEEEauthorblockA{\textit{Fachhochschule Aachen} \\
-\textit{Fachbereich 5 Elektrotechnik und Informationstechnik}\\
-Aachen, Deutschland \\
-marcel.ochsendorf@alumni.fh-aachen.de}
+\author{\IEEEauthorblockN{Marcel Ochsendorf}
+\IEEEauthorblockA{\textit{Embedded Systems} \\
+\textit{Fachbereich 5 Elektrotechnik und Informationstechnik}\\ Fachhochschule Aachen, Deutschland}
 \and
-
+\IEEEauthorblockN{Muhammed Parlak}
+\IEEEauthorblockA{\textit{Embedded Systems} \\
+\textit{Fachbereich 5 Elektrotechnik und Informationstechnik}\\ Fachhochschule Aachen, Deutschland}
 }
 
 \maketitle
@@ -50,8 +57,12 @@ Linux Kernel Tracing, Embedded System, Embedded Programming
 Tracing ist die spezielle Verwendung der Protokollierung zur Aufzeichnung von Informationen über den Ausführungsablauf eines Programms.
 Oft werden mit eigenständig hinzugefügte Print-Messages der Code debuggt. Somit verfolgt man die Anweisungen mit einem eigenem tracing-System.
 Linux bringt einige eigenständige Tools mit, mit denen es möglich ist Vorgänge innerhalb von einem Embedded-System nachvollziehen und analysieren zu können.
+Die Linux-Tracing Funktionalität und die bestehenden Tools, welche im Linux-Kernel integriert sind, helfen so dabei bei der Identifikation von Laufzeiten, Nebenläufigkeiten  und der Untersuchung von Latenzproblemen,
+%-------------------------------------------------------------------------------------
 
-%-----------------------------------------------------------------------------------------------------------------------------------------------
+\subsection{Tracing}
+
+
 %ERLÄUTERUNGEN
 Nachfolgend wird erleutert und an einem Beispiel demonstriert, wie das Linux-Tracing bei der Identifikation von Laufzeitproblemen eingesetzt werden kann.
 
@@ -61,18 +72,43 @@ Nachfolgend wird erleutert und an einem Beispiel demonstriert, wie das Linux-Tra
 \subsection{Ursprung}
 
 
+\section{Grundlagen}
 
+\subsection{Events}
+
+\subsection{Kprobes}
+
+Kprobes können dazu verwendet werden, Laufzeit und Performance-Daten des Kernels zu sammeln.
+Der Vorteil and diesen ist, dass diese Daten ohne Unterbrechnung der Ausführung auf CPU-Instruktions-Ebene aggregiert werden können, anders wie bei dem Debuggen eines Programms mittels Breakpoints.
+
+\subsubsection{CPU-Traps}
+
+
+\begin{lstlisting}[language=bash,caption={bash version}]
+    #!/bin/bash
+
+\end{lstlisting}
+
+\section{Tracing auf Mikrokontrollern}
 %-----------------------------------------------------------------------------------------------------------------------------------------------
 %SHADER
 
 \section{Tools}
 
+Allgemein sind keine speziellen Programme notwending um die Laufzeiteigenschaften eines Programms aufzuzeichnen.
+Der Linux-Kernel bringt bereits alle nötigen Funktionalitäten mit. Jedoch gibt es Tools die eine visuelle Darstellung der aufgezeichneten Events ermöglichen.
 
 
 \subsection{Trace-Log Aufzeichnung}
 
+\subsubsection{ftrace}
+
+
 
 \subsection{Visualisierung}
+
+\subsubsection{Kernelshark}
+
 \begin{figure}[htbp]
 \centerline{\includegraphics[width=8cm]{kernelshark.png}}
 \caption{Kernelshark}
@@ -82,6 +118,9 @@ Nachfolgend wird erleutert und an einem Beispiel demonstriert, wie das Linux-Tra
 
 
 
+
+\section{Interpretation des Kernel-Trace Ergebnisses}
+
 %-----------------------------------------------------------------------------------------------------------------------------------------------
 %VERGLEICHE
 
@@ -89,9 +128,15 @@ Nachfolgend wird erleutert und an einem Beispiel demonstriert, wie das Linux-Tra
 
 \subsection{Ausgangsszenario}
 
+Als Ausgangspunkt dieses Beispiels, soll das Laufzeitverhalten eines Programms auf einem Linux-System analysiert werden.
+Die zugrunde liegende Software wurde bisher nur auf einem Linux-Realtime Kernel verwendet,
+jedoch erfordert die Implementation neuer Features eine neuere Kernel-Version, welche noch nicht als RT-Version auf dem System zur Verfügung steht.
+Somit soll ermittelt werden, ob die unmodifizierte Software eins zu eins auf dem neuen System lauffähig ist und die Laufzeitandorderungen erfüllt.
+
+
 \subsection{Aufzeichnung mittels ftrace}
 
-\subsection{Visualisierung und Beurteilung des Trace-Logs}
+\subsection{Visualisierung und Beurteilung des Trace-Logs mittels kernelshark}
 %-----------------------------------------------------------------------------------------------------------------------------------------------
 %FAZIT
 
