@@ -79,29 +79,40 @@ $ ls -1 events/
 \begin{lstlisting}[language=bash]
  $ cd /sys/kernel/debug/tracing
  $ echo 1 > events/sched/enable
+\end{lstlisting}
 
-### Kprobes
+\hypertarget{kprobes}{%
+\subsection{Kprobes}\label{kprobes}}
 
-Kprobes können dazu verwendet werden, Laufzeit und Performance-Daten des Kernels zu sammeln.
-Der Vorteil and diesen ist, dass diese Daten ohne Unterbrechnung der Ausführung auf CPU-Instruktions-Ebene aggregiert werden können, anders wie bei dem Debuggen eines Programms mittels Breakpoints.
-Ein weiterer Vorteil ist, dass das Registrieren der Kprobes dynamisch zur Laufzeit und ohne Änderungen des Programmcodes geschieht.
+Kprobes können dazu verwendet werden, Laufzeit und Performance-Daten des
+Kernels zu sammeln. Der Vorteil and diesen ist, dass diese Daten ohne
+Unterbrechnung der Ausführung auf CPU-Instruktions-Ebene aggregiert
+werden können, anders wie bei dem Debuggen eines Programms mittels
+Breakpoints. Ein weiterer Vorteil ist, dass das Registrieren der Kprobes
+dynamisch zur Laufzeit und ohne Änderungen des Programmcodes geschieht.
 
-### CPU-Traps
+\hypertarget{cpu-traps}{%
+\subsection{CPU-Traps}\label{cpu-traps}}
 
+\hypertarget{tracing-auf-mikrokontrollern}{%
+\chapter{Tracing auf
+Mikrokontrollern}\label{tracing-auf-mikrokontrollern}}
 
-# Tracing auf Mikrokontrollern
+\hypertarget{tools}{%
+\chapter{Tools}\label{tools}}
 
-# Tools
+Allgemein sind keine speziellen Programme notwending um die
+Laufzeiteigenschaften eines Programms aufzuzeichnen. Der Linux-Kernel
+bringt bereits alle nötigen Funktionalitäten mit. Jedoch gibt es Tools
+die eine visuelle Darstellung der aufgezeichneten Events ermöglichen.
 
-Allgemein sind keine speziellen Programme notwending um die Laufzeiteigenschaften eines Programms aufzuzeichnen.
-Der Linux-Kernel bringt bereits alle nötigen Funktionalitäten mit. Jedoch gibt es Tools die eine visuelle Darstellung der aufgezeichneten Events ermöglichen.
+\hypertarget{trace-log-aufzeichnung}{%
+\section{Trace-Log Aufzeichnung}\label{trace-log-aufzeichnung}}
 
+\hypertarget{trace-cmd}{%
+\subsection{trace-cmd}\label{trace-cmd}}
 
-## Trace-Log Aufzeichnung
-
-### trace-cmd
-
-```bash
+\begin{lstlisting}[language=bash]
 # CHECK IF TRACING IS ENABLED
 # RUN AS SUDO
 $ mount | grep tracefs
@@ -122,8 +133,8 @@ $ trace-cmd record -e sched ./program_executable
 \hypertarget{visualisierung}{%
 \section{Visualisierung}\label{visualisierung}}
 
-\hypertarget{trace-cmd}{%
-\subsection{trace-cmd}\label{trace-cmd}}
+\hypertarget{trace-cmd-1}{%
+\subsection{trace-cmd}\label{trace-cmd-1}}
 
 Die trace-cmd Konsolenanwendung dient nicht nur zur Aufzeichnung der
 Trace-Events, sondern bietet auch die Möglichkeit augezeichnetet Reports
@@ -147,8 +158,8 @@ Ergebnisses}\label{interpretation-des-kernel-trace-ergebnisses}}
 \chapter{Beispiel der Identifikation von
 Laufzeitproblemen}\label{beispiel-der-identifikation-von-laufzeitproblemen}}
 
-\hypertarget{ausgangsszenario}{%
-\section{Ausgangsszenario}\label{ausgangsszenario}}
+In diesem Abschnitt soll an einem einfache Beispiel gezeigt werden \#\#
+Ausgangsszenario
 
 Als Ausgangspunkt dieses Beispiels, soll das Laufzeitverhalten eines
 Programms auf einem Linux-System analysiert werden. Die zugrunde
@@ -163,15 +174,6 @@ Das System besteht hier aus einem
 \passthrough{\lstinline!RaspberryPi 4B!} mit einer angeschlossenen LED
 am GPIO-Port \passthrough{\lstinline!25!} und zu testende Programm lässt
 diese dabei in 100ms Abständen Blinken.
-
-Für den Test wurde als RT Kernel die Version
-\passthrough{\lstinline!4.19.59-rt23-v7l+!} verwendet, welche nicht alle
-Funktionaltitäten des aktuellen \passthrough{\lstinline!5.15!} Kernel
-besitzt. In diesem fiktiven Beispiel, wird die
-\passthrough{\lstinline!systemd-networking!} Funktionalität für das
-Batman-Prokoll benötigt, welche den Grund für die Umstellung darstellt
-und nicht trivial in den \passthrough{\lstinline!4.x!} Kernel integriert
-werden kann.
 
 \begin{lstlisting}[language={C++}]
 #include <iostream>
@@ -203,9 +205,28 @@ int main(int argc, char *argv[])
 }
 \end{lstlisting}
 
-\hypertarget{aufzeichnung-mittels-ftrace}{%
-\section{Aufzeichnung mittels
-ftrace}\label{aufzeichnung-mittels-ftrace}}
+Für den Test wurde als RT Kernel die Version
+\passthrough{\lstinline!4.19.59-rt23-v7l+!} verwendet, welche nicht alle
+Funktionaltitäten des aktuellen \passthrough{\lstinline!5.10!} Kernel
+besitzt. In diesem fiktiven Beispiel, wird die
+\passthrough{\lstinline!systemd-networking!} Funktionalität für das
+Batman-Prokoll benötigt, welche den Grund für die Umstellung darstellt
+und nicht trivial in den \passthrough{\lstinline!4.x!} Kernel integriert
+werden kann.
+
+Die Messungen wurden zuerst auf dem aktuellen
+\passthrough{\lstinline!5.10 LTS!} Kernel aufgezeichnet und im Anschluss
+wurde der RT-Kernel auf einem anderen System per Cross-Compilation aus
+dem \passthrough{\lstinline!rpi-4.19.y-rt!} Branch des
+\passthrough{\lstinline!raspberrypi/linux!} Repository gebaut. Dieser
+Schritt war notwendig, da es kein fertiges RT-Kernel Image zur Verfügung
+stand. Die erzeugten Dateien wurden dann auf die Boot-Partition der SD
+Karte geschrieben und in der \passthrough{\lstinline!/boot/config.txt!}
+Datei wurde der neue Kernel hinterlegt
+\passthrough{\lstinline!kernel=kernel7\_rt.img!}.
+
+\hypertarget{aufzeichnung-trace-log}{%
+\section{Aufzeichnung Trace-Log}\label{aufzeichnung-trace-log}}
 
 \hypertarget{visualisierung-und-beurteilung-des-trace-logs-mittels-kernelshark}{%
 \section{Visualisierung und Beurteilung des Trace-Logs mittels

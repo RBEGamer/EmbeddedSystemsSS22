@@ -55,7 +55,7 @@ $ ls -1 events/
 ```bash
  $ cd /sys/kernel/debug/tracing
  $ echo 1 > events/sched/enable
-
+```
 ### Kprobes
 
 Kprobes können dazu verwendet werden, Laufzeit und Performance-Daten des Kernels zu sammeln.
@@ -112,6 +112,7 @@ Die Ausgabe erfolgt als Tabelle in der Konsole und ist somit rein Textbasiert.
 
 # Beispiel der Identifikation von Laufzeitproblemen
 
+In diesem Abschnitt soll an einem einfache Beispiel gezeigt werden
 ## Ausgangsszenario
 
 Als Ausgangspunkt dieses Beispiels, soll das Laufzeitverhalten eines Programms auf einem Linux-System analysiert werden.
@@ -121,9 +122,6 @@ Somit soll ermittelt werden, ob die unmodifizierte Software eins zu eins auf dem
 
 Das System besteht hier aus einem `RaspberryPi 4B` mit einer angeschlossenen LED am GPIO-Port `25`
 und zu testende Programm lässt diese dabei in 100ms Abständen Blinken.
-
-Für den Test wurde als RT Kernel die Version `4.19.59-rt23-v7l+` verwendet, welche nicht alle Funktionaltitäten des aktuellen `5.15` Kernel besitzt.
-In diesem fiktiven Beispiel, wird die `systemd-networking` Funktionalität für das Batman-Prokoll benötigt, welche den Grund für die Umstellung darstellt und nicht trivial in den `4.x` Kernel integriert werden kann.
 
 ```c++
 #include <iostream>
@@ -155,7 +153,16 @@ int main(int argc, char *argv[])
 }
 ```
 
-## Aufzeichnung mittels ftrace
+Für den Test wurde als RT Kernel die Version `4.19.59-rt23-v7l+` verwendet, welche nicht alle Funktionaltitäten des aktuellen `5.10` Kernel besitzt.
+In diesem fiktiven Beispiel, wird die `systemd-networking` Funktionalität für das Batman-Prokoll benötigt, welche den Grund für die Umstellung darstellt und nicht trivial in den `4.x` Kernel integriert werden kann.
+
+Die Messungen wurden zuerst auf dem aktuellen `5.10 LTS` Kernel aufgezeichnet und im Anschluss wurde der RT-Kernel auf einem anderen System per Cross-Compilation aus dem `rpi-4.19.y-rt` Branch des `raspberrypi/linux` Repository gebaut.
+Dieser Schritt war notwendig, da es kein fertiges RT-Kernel Image zur Verfügung stand.
+Die erzeugten Dateien wurden dann auf die Boot-Partition der SD Karte geschrieben und in der `/boot/config.txt` Datei wurde der neue Kernel hinterlegt `kernel=kernel7_rt.img`.
+
+
+
+## Aufzeichnung Trace-Log
 
 ## Visualisierung und Beurteilung des Trace-Logs mittels kernelshark
 
