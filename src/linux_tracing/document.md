@@ -57,14 +57,19 @@ $ ls -1 events/
  $ cd /sys/kernel/debug/tracing
  $ echo 1 > events/sched/enable
 ```
-### Kprobes
+### kprobes
 
 Kprobes können dazu verwendet werden, Laufzeit und Performance-Daten des Kernels zu sammeln.
 Der Vorteil and diesen ist, dass diese Daten ohne Unterbrechnung der Ausführung auf CPU-Instruktions-Ebene aggregiert werden können, anders wie bei dem Debuggen eines Programms mittels Breakpoints.
 Ein weiterer Vorteil ist, dass das Registrieren der Kprobes dynamisch zur Laufzeit und ohne Änderungen des Programmcodes geschieht.
 
+### kretprobes
 ### CPU-Traps
 
+### uprobes
+
+* für anwendungn
+* system libs
 
 # Tracing auf Mikrokontrollern
 
@@ -96,6 +101,26 @@ $ echo *:* > /sys/kernel/debug/tracing/set_event
 $ trace-cmd record -e sched ./program_executable
 ```
 
+
+### bpftrace
+
+Seit der Kernelversion `>4.x`, steht ein weiteres Tool mit dem Namen `bpftrace` zur Verfügung.
+Dieses bietet jedoch zusätzlich eine eigene Skripsprache mit der nicht nur Aggreation, sondern auch die Eventfilter und die Verarbeitung der Ergebnisse automatisiert werden können.
+
+
+```bash
+# Block I/O latency as a histogram EXAMPLE
+$ wget https://raw.githubusercontent.com/iovisor/bpftrace/master/tools/biolatency.bt
+$ bftrace ./biolatency.bt
+# @usecs:
+# [512, 1K)             10 |@                       |
+# [ 1K, 2K)            426 |@@@@@@@@@@@@@@@@@@      |
+# [2K, 4K)             230 |@@@@@@@@@@@@@@          |
+# [4K, 8K)               9 |@                       |
+# [8K, 16K)            128 |@@@@@@@@@@@@@@@         |
+# [16K, 32K)            68 |@@@@@@@@                |
+# ...
+```
 ## Visualisierung
 
 ### trace-cmd
@@ -166,6 +191,16 @@ Die erzeugten Dateien wurden dann auf die Boot-Partition der SD Karte geschriebe
 ## Aufzeichnung Trace-Log
 
 Zur Aufzeichnung des Trace-Logs wurde `trace-cmd` verwendet. Auf dem Zielsystem wurde dabei nur die Aufzeichnung vorgenommen und die Analyse der Logs erfolgte auf einem seperaten System.
+
+### Aktivierung der Events
+
+```bash
+$ echo 1 > /sys/kernel/debug/tracing/tracing_on
+$ cat /sys/kernel/debug/tracing/trace
+$echo > /sys/kernel/debug/tracing/trace
+
+```
+
 
 ```bash
 trace-cmd record -e sched ./blink

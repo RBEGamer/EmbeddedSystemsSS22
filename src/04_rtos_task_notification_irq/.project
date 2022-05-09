@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>EmA_D03_04_RTOS_SEGGER_NoteBtn_Polling</name>
+	<name>04_rtos_task_notification_irq</name>
 	<comment></comment>
 	<projects>
 	</projects>

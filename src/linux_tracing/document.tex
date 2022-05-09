@@ -43,6 +43,7 @@ Nebenläufigkeiten und der Untersuchung von Latenzproblemen,
 \end{itemize}
 
 \begin{lstlisting}[language=bash]
+#ENABLE DEBUG FS
 $ sudo mount -t debugfs debugfs /sys/kernel/debug
 \end{lstlisting}
 
@@ -82,7 +83,7 @@ $ ls -1 events/
 \end{lstlisting}
 
 \hypertarget{kprobes}{%
-\subsection{Kprobes}\label{kprobes}}
+\subsection{kprobes}\label{kprobes}}
 
 Kprobes können dazu verwendet werden, Laufzeit und Performance-Daten des
 Kernels zu sammeln. Der Vorteil and diesen ist, dass diese Daten ohne
@@ -91,8 +92,22 @@ werden können, anders wie bei dem Debuggen eines Programms mittels
 Breakpoints. Ein weiterer Vorteil ist, dass das Registrieren der Kprobes
 dynamisch zur Laufzeit und ohne Änderungen des Programmcodes geschieht.
 
+\hypertarget{kretprobes}{%
+\subsection{kretprobes}\label{kretprobes}}
+
 \hypertarget{cpu-traps}{%
 \subsection{CPU-Traps}\label{cpu-traps}}
+
+\hypertarget{uprobes}{%
+\subsection{uprobes}\label{uprobes}}
+
+\begin{itemize}
+\tightlist
+\item
+  für anwendungn
+\item
+  system libs
+\end{itemize}
 
 \hypertarget{tracing-auf-mikrokontrollern}{%
 \chapter{Tracing auf
@@ -126,8 +141,31 @@ $ echo sched_wakeup >> /sys/kernel/debug/tracing/set_event
 $ echo *:* > /sys/kernel/debug/tracing/set_event
 
 
-
+# RECORD
 $ trace-cmd record -e sched ./program_executable
+\end{lstlisting}
+
+\hypertarget{bpftrace}{%
+\subsection{bpftrace}\label{bpftrace}}
+
+Seit der Kernelversion \passthrough{\lstinline!>4.x!}, steht ein
+weiteres Tool mit dem Namen \passthrough{\lstinline!bpftrace!} zur
+Verfügung. Dieses bietet jedoch zusätzlich eine eigene Skripsprache mit
+der nicht nur Aggreation, sondern auch die Eventfilter und die
+Verarbeitung der Ergebnisse automatisiert werden können.
+
+\begin{lstlisting}[language=bash]
+# Block I/O latency as a histogram EXAMPLE
+$ wget https://raw.githubusercontent.com/iovisor/bpftrace/master/tools/biolatency.bt
+$ bftrace ./biolatency.bt
+# @usecs:
+# [512, 1K)             10 |@                       |
+# [ 1K, 2K)            426 |@@@@@@@@@@@@@@@@@@      |
+# [2K, 4K)             230 |@@@@@@@@@@@@@@          |
+# [4K, 8K)               9 |@                       |
+# [8K, 16K)            128 |@@@@@@@@@@@@@@@         |
+# [16K, 32K)            68 |@@@@@@@@                |
+# ...
 \end{lstlisting}
 
 \hypertarget{visualisierung}{%
@@ -209,10 +247,10 @@ Für den Test wurde als RT Kernel die Version
 \passthrough{\lstinline!4.19.59-rt23-v7l+!} verwendet, welche nicht alle
 Funktionaltitäten des aktuellen \passthrough{\lstinline!5.10!} Kernel
 besitzt. In diesem fiktiven Beispiel, wird die
-\passthrough{\lstinline!systemd-networking!} Funktionalität für das
-Batman-Prokoll benötigt, welche den Grund für die Umstellung darstellt
-und nicht trivial in den \passthrough{\lstinline!4.x!} Kernel integriert
-werden kann.
+\passthrough{\lstinline!systemd-networking >V.248!} Funktionalität für
+das Batman-Prokoll benötigt, welche den Grund für die Umstellung
+darstellt und nicht trivial in den \passthrough{\lstinline!4.x!} Kernel
+integriert werden kann.
 
 Die Messungen wurden zuerst auf dem aktuellen
 \passthrough{\lstinline!5.10 LTS!} Kernel aufgezeichnet und im Anschluss
@@ -227,6 +265,24 @@ Datei wurde der neue Kernel hinterlegt
 
 \hypertarget{aufzeichnung-trace-log}{%
 \section{Aufzeichnung Trace-Log}\label{aufzeichnung-trace-log}}
+
+Zur Aufzeichnung des Trace-Logs wurde
+\passthrough{\lstinline!trace-cmd!} verwendet. Auf dem Zielsystem wurde
+dabei nur die Aufzeichnung vorgenommen und die Analyse der Logs erfolgte
+auf einem seperaten System.
+
+\hypertarget{aktivierung-der-events}{%
+\subsection{Aktivierung der Events}\label{aktivierung-der-events}}
+
+\begin{lstlisting}[language=bash]
+$ echo 1 > /sys/kernel/debug/tracing/tracing_on
+$ cat /sys/kernel/debug/tracing/trace
+$echo > /sys/kernel/debug/tracing/trace
+\end{lstlisting}
+
+\begin{lstlisting}[language=bash]
+trace-cmd record -e sched ./blink
+\end{lstlisting}
 
 \hypertarget{visualisierung-und-beurteilung-des-trace-logs-mittels-kernelshark}{%
 \section{Visualisierung und Beurteilung des Trace-Logs mittels
