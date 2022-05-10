@@ -28,7 +28,7 @@ rm -f ./document.tex
 rm -f ./abstract.tex
 rm -f ./attachments.tex
 # REMOVE GENERATED PDF
-rm -f ./thesis.pdf
+rm -f ./main.pdf
 
 
 echo "-- STARTING BUILDING DOCUMENT --"
