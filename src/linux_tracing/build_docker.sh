@@ -1,4 +1,5 @@
 #!/bin/bash
+cd "$(dirname "$0")"
 
 if [[ "$(docker images -q markdownlatex:latest 2> /dev/null)" == "" ]]; then
   echo "markdownlatex:latest IMAGE BUILD STARTED"
