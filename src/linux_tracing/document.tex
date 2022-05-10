@@ -18,7 +18,7 @@ Nebenläufigkeiten und der Untersuchung von Latenzproblemen,
 \begin{itemize}
 \tightlist
 \item
-  multicore systeme
+  multicore systeme unterscheid mikotrkontroller
 \end{itemize}
 
 \hypertarget{tracing}{%
@@ -68,6 +68,17 @@ $ ls -1 events/
 # irq
 \end{lstlisting}
 
+\hypertarget{beispiel-fuxfcr-events}{%
+\section{Beispiel für Events}\label{beispiel-fuxfcr-events}}
+
+\begin{itemize}
+\tightlist
+\item
+  file operartionen
+\item
+  netzzwerk zugriffe
+\end{itemize}
+
 \hypertarget{scheduler}{%
 \subsection{Scheduler}\label{scheduler}}
 
@@ -109,9 +120,26 @@ dynamisch zur Laufzeit und ohne Änderungen des Programmcodes geschieht.
   system libs
 \end{itemize}
 
+\hypertarget{nachteile-verscfuxe4lschung}{%
+\section{Nachteile / verscfälschung}\label{nachteile-verscfuxe4lschung}}
+
+\begin{itemize}
+\tightlist
+\item
+  welche effekte können entstehen
+\item
+  tracing bracuth ressoucen
+\item
+  last minimieren auf traget minimieren
+\item
+  nur aufzeichnen und später analysieren z.B. auf einem anderen system
+\item
+  wie verhindern
+\end{itemize}
+
 \hypertarget{tracing-auf-mikrokontrollern}{%
-\chapter{Tracing auf
-Mikrokontrollern}\label{tracing-auf-mikrokontrollern}}
+\chapter{Tracing auf Mikrokontrollern
+?????}\label{tracing-auf-mikrokontrollern}}
 
 \hypertarget{tools}{%
 \chapter{Tools}\label{tools}}
@@ -178,6 +206,16 @@ $ bftrace ./biolatency.bt
 # [16K, 32K)            68 |@@@@@@@@                |
 # ...
 \end{lstlisting}
+
+\hypertarget{netzwerk-paketanalyse-beispiel}{%
+\subsection{Netzwerk Paketanalyse
+Beispiel}\label{netzwerk-paketanalyse-beispiel}}
+
+\begin{itemize}
+\tightlist
+\item
+  mit bfttrac verworfene netzwerkpakete zählen wenn zu viel trafic
+\end{itemize}
 
 \hypertarget{kernelshark}{%
 \subsection{Kernelshark}\label{kernelshark}}
