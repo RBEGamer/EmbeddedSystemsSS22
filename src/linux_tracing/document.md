@@ -48,6 +48,13 @@ $ ls -1 events/
 # irq
 ```
 
+## Beispiel für Events
+
+* file operartionen
+* netzzwerk zugriffe
+
+
+
 ### Scheduler
 ### IRQ
 
@@ -70,6 +77,9 @@ Ein weiterer Vorteil ist, dass das Registrieren der Kprobes dynamisch zur Laufze
 
 * für anwendungn
 * system libs
+
+
+
 
 # Tracing auf Mikrokontrollern
 
