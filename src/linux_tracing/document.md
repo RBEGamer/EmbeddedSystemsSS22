@@ -7,7 +7,7 @@ Die Linux-Tracing Funktionalität und die bestehenden Tools, welche im Linux-Ker
 
 ## Relevanz
 
-* multicore systeme
+* multicore systeme unterscheid mikotrkontroller
 
 ## Tracing
 
@@ -79,9 +79,16 @@ Ein weiterer Vorteil ist, dass das Registrieren der Kprobes dynamisch zur Laufze
 * system libs
 
 
+## Nachteile / verscfälschung
+
+* welche effekte können entstehen
+* tracing bracuth ressoucen
+* last minimieren auf traget minimieren
+* nur aufzeichnen und später analysieren z.B. auf einem anderen system
+* wie verhindern
 
 
-# Tracing auf Mikrokontrollern
+# Tracing auf Mikrokontrollern ?????
 
 # Tools
 
@@ -111,6 +118,8 @@ $ echo *:* > /sys/kernel/debug/tracing/set_event
 $ trace-cmd record -e sched ./program_executable
 ```
 
+
+
 * output erklörung
 
 Die `trace-cmd` Konsolenanwendung dient nicht nur zur Aufzeichnung der Trace-Events, sondern bietet auch die Möglichkeit augezeichnetet Reports visuell darzustellen.
@@ -139,7 +148,9 @@ $ bftrace ./biolatency.bt
 # ...
 ```
 
+### Netzwerk Paketanalyse Beispiel
 
+* mit bfttrac verworfene netzwerkpakete zählen wenn zu viel trafic
 
 ### Kernelshark
 
