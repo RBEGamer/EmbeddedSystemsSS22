@@ -98,7 +98,45 @@ Der Linux-Kernel bringt bereits alle nötigen Funktionalitäten mit. Jedoch gibt
 
 ## Trace-Log Aufzeichnung
 
+Für die Log-Aufzeichnung wird ein Ringbuffer genutzt. Das Aufzeichnen in den Ringpuffer ist Standardmäßig aktiviert. 
+
+```bash
+# Disable the Recording on the ringbuffer
+$ echo 0 > tracing on
+```
+
+Mit dem folgenden Befehl kann der Inhalt des Ringuffers, auch während einer Aufzeichung, ausgebeben werden:
+
+```bash
+$ less trace
+```
+Das Lesen während einer Aufzeichnung mit trace hat keinerlei Einfluss auf den Inhalt des Ringpuffers. Die Ausgabe des letzten Kommandos wird dabei in einem menschenlesbaren Format dargestellt:
+
+![Trace-Log \label{trace-log}](images/trace-log-print.png)
+
+Die bisheirgen Aufzeichnungen der Ereignisse können mit einem einfachen Befehl entfernt werden:
+
+```bash
+$ echo > trace
+```
+Um einen Überlauf an Informationen zu verhinden kann die Aufzeichnung auch konsumierend gelesen werden. Somit werden beim Lesen zeitgleich diese aus dem Ringbuffer entfernt.
+
+Eine weitere Kernpunkt ist, dass in Mehrkernsystemen für jeden einzelnen Core ein separater Ringbuffer existiert. Damit die Analyse von verschiedenen Events getrennt werden kann, kann mit jeder weiteren Instanz pro Core ein weiterer Ringbuffer angelgt werden. Dies erfolgt im Untervereziechnis `instances/`.
+
+```bash
+$ cd instances
+$ mkdir inst0
+$ mkdir inst1
+
+# Remove if the instances is not needed anymore
+# rmdir inst0
+```
+
+![Ringbuffer \label{ringbuffer}](images/ringbuffer.png)
+
 ### trace-cmd
+
+Das Tool `trace-cmd` ist das bekannteste und am meisten genutzte Hilfmittel zur Aufzeichnung. Dies ist ein kommandozeilenwerkzeug, das auf den meisten gängingen Linux Distrubitionen bereits vorinstalliert ist.
 
 ```bash
 # CHECK IF TRACING IS ENABLED
@@ -118,21 +156,23 @@ $ echo *:* > /sys/kernel/debug/tracing/set_event
 $ trace-cmd record -e sched ./program_executable
 ```
 
-
-
 * output erklörung
 
+Mit dem letzten Befehl werden die ganzen Events zu Scheduler aufgezeichnet. Dabei werden während der Aufzeichnung kontinuierlich die Ringbuffer in konsumierender Form ausgelesen und in die Datei `trace.dat` geschrieben, falls mit dem `-o` keine eigene Datei eingegeben wurde. Als Informationen werden zu dem Inhalt des Ringbuffers auch zusätzlich notwendige Informationen über das Target, für die Auswertung auf beliebigen System gespeichert.
+
 Die `trace-cmd` Konsolenanwendung dient nicht nur zur Aufzeichnung der Trace-Events, sondern bietet auch die Möglichkeit augezeichnetet Reports visuell darzustellen.
-Die Ausgabe erfolgt als Tabelle in der Konsole und ist somit rein Textbasiert.
+Die Ausgabe erfolgt mit dem Befehl `trace-cmd report [-i <Dateiname>]` als Tabelle in der Konsole und ist somit rein Textbasiert, siehe dazu die nächste Abbildung.
 
+![trace-cmd Report \label{trace-cmd-report}](images/trace-png.jpg)
 
+Auf diese Aufzeichnung zusätzlich ein Filter angewendet werden, um die Suche auf bestimten Erreignissen einzugrenzen.
 
+Mit dem Tool ist es einfach die Teilschritte zu automatisieren.
 
 ### bpftrace
 
 Seit der Kernelversion `>4.x`, kann ein weiteres Tool mit dem Namen `bpftrace` verwendet werden.
 Dieses bietet jedoch zusätzlich eine eigene Skripsprache mit der nicht nur Aggreation, sondern auch die Eventfilter und die Verarbeitung der Ergebnisse automatisiert werden können.
-
 
 ```bash
 # Block I/O latency as a histogram EXAMPLE
