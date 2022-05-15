@@ -194,6 +194,19 @@ $ bftrace ./biolatency.bt
 
 ### Kernelshark
 
+Das zuvor erklärte `tace-cmd` ist wie oben erwähnt nur ein textbasiertes Analysetool. Das kommende Kernelshark Tool bietet dem Anwender
+die Möglichkeit die Traceaufzeichnungen grafisch zu analysieren. Dabei sind die beiden Tools aufeinander abgestimmt und werden
+gemeinsam entwickelt. Auch dieses Tool ist in den meisten Linux Distrubutionen vorinstalliert.
+
+Das vom trace-cmd erzeugte `trace.dat-Format` wird im Kernelshark als Eingabe erwartet. Wenn im folgendem ersten Befehl nichts eingegeben, dann wird nach der entsprechenden `trace.dat` im Verzeichnis gesucht.
+
+```bash
+$ kernelshark
+$ kernelshark -i <Dateiname>
+```
+
+Im folgenden ist die grafische Darstellung zu sehen. Dabei besitzt jeder Task ein eigenen Farbton. Für jede CPU wird eine eigene Zeile dargestellt. Dieses Tool hat eine gewisse Ähnlichkeit mit der von uns genutzten Logic 2 Software.
+
 ![Kernelshark \label{kernelshark}](images/kernelshark.png)
 
 # Interpretation des Kernel-Trace Ergebnisses
