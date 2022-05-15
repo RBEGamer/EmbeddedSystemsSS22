@@ -304,10 +304,33 @@ Somit muss `bpftrace` aus den Quellen gebaut werden, da in der APT-Registry nur 
 ```bash
 # INSTALL FROM SOURCE
 $ git clone https://github.com/iovisor/bpftrace ./bpftrace
-$ cd ./bpftrace && mkdir -p build && cmake -DCMAKE_BUILD_TYPE=Release . && make -j20
+$ cd ./bpftrace && mkdir -p build
+$ cmake -DCMAKE_BUILD_TYPE=Release . && make -j20
 $ sudo make install
 # GET TCP DROP EXAMPLE
-$ cd ~ && wget https://raw.githubusercontent.com/iovisor/bpftrace/master/tools/tcpdrop.bt
+$ cd ~
+$ wget https://raw.githubusercontent.com/iovisor/bpftrace/master/tools/tcpdrop.bt
+```
+
+Das `tcpdrop.bt` Script, welches in diesem Beispiel verwendet wird, registriert eine `kprobe` auf die `tcp_drop()` Funktion und 
+nutzt anschließend `printf` Funktion um die Informationen in den Userspace zu loggen.
+
+```c++
+// tcpdrop.bt - SIMPLIFIED
+kprobe:tcp_drop
+{
+    // GET SOCKET INFORMATION
+    $sk = ((struct sock *) arg0);
+    $inet_family = $sk->__sk_common.skc_family;
+    //ADRESSES
+    $daddr = ntop($sk->__sk_common.skc_daddr);
+    $saddr = ntop($sk->__sk_common.skc_rcv_saddr);
+    // PORTS
+    $dport = $sk->__sk_common.skc_dport;
+    $dport = $sk->__sk_common.skc_dport;
+    //LOG INTO USERSPACE
+    printf("%39s:%-6d %39s:%-6d %-10s\n", $saddr, $lport, $daddr, $dport, $statestr);
+}
 ```
 
 Um eine Lastspitze auf dem System zu erzeugen wurde das Netzwerkbenchmark-Tool `ntttcp` verwendet. Mit diesem ist es möglich UDP und TCP Pakete mit verschiedenen Paketgrößen zu generieren.
@@ -317,10 +340,9 @@ Hierzu werden zwei Instanzen benötigt, der Server und der Client.
 ```bash
 # START SERVER
 $ ntttcp -r
-------------------------------------------------------------
-Server listening on TCP port 5001
-TCP window size:  128 KByte (default)
-------------------------------------------------------------
+NTTTCP for Linux 1.4.0
+---------------------------------------------------------
+21:27:58 INFO: 17 threads created
 
 # RUN bpftrace RECORD
 $ sudo bpftrace -o ~/tcpdrop_log -f text -v ~/tcpdrop.bt 
@@ -330,27 +352,71 @@ The verifier log:
 processed 374 insns (limit 1000000) max_states_per_insn 0 total_states 7 peak_states 7 mark_read 1
 Attaching BEGIN
 
-# START CLIENT
-$ ntttcp -s127.0.0.1 -t0
+# START CLIENT # PACKET SIZE 4096K
+$ ntttcp -s10.11.12.1 -t -l 4096K
 NTTTCP for Linux 1.4.0
 ---------------------------------------------------------
-INFO: running test in continuous mode. please monitor throughput by other tools
-INFO: 64 threads created
-INFO: 64 connections created in 1033569 microseconds
-INFO: Network activity progressing...
+21:28:52 INFO: running test in continuous mode. please monitor throughput by other tools
+21:28:52 INFO: 64 threads created
+21:28:52 INFO: 64 connections created in 5656 microseconds
+21:28:52 INFO: Network activity progressing...
 ```
 
 
-Nachdem `ntttcp` nach einigen Minuten gestoppt wurde, wurde auch die `bpftrace` Aufzeichnung gestoppt.
-D
+Nach einigen Sekunden wurde `ntttcp` und `bpftrace` die Aufzeichnung manuell gestoppt.
+Der aufgezeichnete Trace für das `tcp_drop`-Event befindet sich in der `tcpdrop_log` Datei
 
 ```bash
-$ ip -s link show enp5s0
-2: enp5s0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP mode DEFAULT group default qlen 1000
-    link/ether b4:2e:99:fb:4a:2b brd ff:ff:ff:ff:ff:ff
-    RX: bytes  packets  errors  dropped overrun mcast   
-    8188684166 5702925  0       16755   0       14157   
+$ cat ~/tcpdrop_log
+[..]
+# tcp_drop() TIME   PID  APPLICATION    SOURCE  DESTINATION
+21:36:57 18157    ntttcp       10.11.12.1:5014     10.11.12.2:59012
+        #CALLSTACK
+        # LAST FUNCTION CALL
+        tcp_drop+1
+        tcp_rcv_established+562
+        tcp_v4_do_rcv+328
+        tcp_v4_rcv+3325
+        ip_protocol_deliver_rcu+48
+        ip_local_deliver_finish+72
+        ip_local_deliver+250
+        ip_rcv_finish+182
+        ip_rcv+204
+        __netif_receive_skb_one_core+136
+        __netif_receive_skb+24
+        process_backlog+169
+        __napi_poll+46
+        net_rx_action+575
+        __do_softirq+204
+        irq_exit_rcu+164
+        sysvec_apic_timer_interrupt+124
+        asm_sysvec_apic_timer_interrupt+18
+        clear_page_erms+7
+        get_page_from_freelist+730
+        __alloc_pages+379
+        alloc_pages+135
+        skb_page_frag_refill+128
+        sk_page_frag_refill+33
+        tcp_sendmsg_locked+1049
+        tcp_sendmsg+45
+        inet_sendmsg+67
+        sock_sendmsg+94
+        __sys_sendto+275
+        __x64_sys_sendto+41
+        do_syscall_64+97
+        entry_SYSCALL_64_after_hwframe+68
+        # FIRST FUNCTION CALL
+[...]
 ```
+
+Die Ausgabe der Logdatei stellt Textbasiert nicht nur dar ob ein TCP-Paket verloren wurde, sondern gibt auch zusätzliche Informationen aus. Jeder Event-Trigger des `tcp_drop()` Events wird dabei mit der Systemzeit, Prozess-ID und dem Programm eingeleitet unter welches das Event ausgelößt hat. In diesem Fall wurde der Paketverlust durch ein Empfangenes Paket der `ntttcp`-Anwendung ausgelößt.
+Die Senderichtung des Pakets kann anhand der Quell- und Empfangs-IP-Adresse ermittelt werden.
+Danach folgt der Kernel-Stacktrace, in welchem der Funktionsaufruf-Verlauf bis zum Auslösen des überwachten Event aufgeführt ist.
+
+Somit ist aus den Logs zu entnehmen, dass unter den getesteten Bedingungen auf dem System TCP Pakete verloren gingen, eine tiefergehende Untersuchung des Kernel-Stacktrace kann hierzu genauere Informationen bereitstellen.
+Das Beispiel zeigt auch, wie nicht nur das Auslösen von Events protokolliert werden kann, sondern auch mittels einfacher Script-Befehle komplexe Debug-Informationen systematisch gewonnen werden können.
+
+
 
 # Beispiel - Identifikation von Laufzeitproblemen
 
