@@ -1,4 +1,5 @@
 #!/bin/bash
+#cd "$(dirname "$0")"
 cd .
 # REMOVE TEMP FILES
 rm -f *.acn

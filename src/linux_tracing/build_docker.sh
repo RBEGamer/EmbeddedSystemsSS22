@@ -9,4 +9,4 @@ else
 fi
 
 
-docker run -i --rm -v "$(pwd)":/var/thesis markdownlatex
+docker run -i --rm -v "$(pwd)":/var/document markdownlatex

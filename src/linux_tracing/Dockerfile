@@ -1,5 +1,5 @@
 FROM ubuntu:20.04
-WORKDIR /var/thesis
+WORKDIR /var/document
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt update
@@ -22,4 +22,6 @@ RUN export PATH="$HOME/.cabal/bin:$PATH"
 #RUN cabal install --ghc-options="+RTS -M7G" -j1 --force-reinstalls pandoc
 #RUN cabal install --ghc-options="+RTS -M7G" -j1 --force-reinstalls --dependencies-only pandoc-csv2table
 
-CMD ["/var/thesis/build.sh"]
+#CMD ["/var/document/build_document.sh"]
+CMD ["bash", "build_documents.sh"]
+#CMD ["ls"]

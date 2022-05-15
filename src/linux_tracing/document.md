@@ -163,7 +163,7 @@ Mit dem letzten Befehl werden die ganzen Events zu Scheduler aufgezeichnet. Dabe
 Die `trace-cmd` Konsolenanwendung dient nicht nur zur Aufzeichnung der Trace-Events, sondern bietet auch die Möglichkeit augezeichnetet Reports visuell darzustellen.
 Die Ausgabe erfolgt mit dem Befehl `trace-cmd report [-i <Dateiname>]` als Tabelle in der Konsole und ist somit rein Textbasiert, siehe dazu die nächste Abbildung.
 
-![trace-cmd Report \label{trace-cmd-report}](images/trace-png.jpg)
+![trace-cmd Report \label{trace-cmd-report}](images/trace-cmd.png)
 
 Auf diese Aufzeichnung zusätzlich ein Filter angewendet werden, um die Suche auf bestimten Erreignissen einzugrenzen.
 
