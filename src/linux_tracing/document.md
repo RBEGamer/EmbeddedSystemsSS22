@@ -99,23 +99,23 @@ format
 ```
 
 Die optionale `format`-Datei kann zusätzliche Informationen bereitstellen über das, durch das Event bereitgestellt Format der Ausgabe.
+Das folgende Beispiel zeigt das Ausgabeformat für die Formatbeschreibung für das Scheduler-Wakeup `sched_wakeup`-Event.
+Somit kann nicht nur in Erfahrung gebracht werden, wann und ob das Event ausgelößt hat, sondern es können auch weitere Event-Spezifische Informationen durch das Event gemeldet werden. 
 
 ```bash
 $  cat /sys/kernel/debug/tracing/events/sched/sched_wakeup/format
-name: sched_wakeup
-ID: 60
+ID: 318
 format:
-        field:unsigned short common_type;       offset:0;       size:2;
-        field:unsigned char common_flags;       offset:2;       size:1;
-        field:unsigned char common_preempt_count;       offset:3;       size:1;
-        field:int common_pid;   offset:4;       size:4;
-        field:int common_tgid;  offset:8;       size:4;
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
 
-        field:char comm[TASK_COMM_LEN]; offset:12;      size:16;
-        field:pid_t pid;        offset:28;      size:4;
-        field:int prio; offset:32;      size:4;
-        field:int success;      offset:36;      size:4;
-        field:int cpu;  offset:40;      size:4;
+	field:char comm[16];	offset:8;	size:16;	signed:1;
+	field:pid_t pid;	offset:24;	size:4;	signed:1;
+	field:int prio;	offset:28;	size:4;	signed:1;
+	field:int success;	offset:32;	size:4;	signed:1;
+	field:int target_cpu;	offset:36;	size:4;	signed:1;
 ```
 
 
