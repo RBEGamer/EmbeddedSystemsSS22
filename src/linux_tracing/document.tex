@@ -157,9 +157,27 @@ format:
 \hypertarget{abfangen-von-events}{%
 \section{Abfangen von Events}\label{abfangen-von-events}}
 
+Um ein Event abfangen zu können, muss dies zuerst für die gewünschten
+Events aktiviert werden. Hierzu werden die Event-Interface-Dateien
+verwendet, welche sich in jeder Event-Gruppe befinden. Die einfachste
+Methode ist es, eine \passthrough{\lstinline!1!} oder
+\passthrough{\lstinline!0!} in die
+\passthrough{\lstinline!enable!}-Datei der Gruppe zu schreiben. Ein
+spezifisches Event kann mit der gleiche Methode aktiviert werden. Hierzu
+wirde die \passthrough{\lstinline!enable!}-Datei im eigentlichen
+Event-Ordner verwendet anstatt jene, welche ich in de Event-Gruppe
+befindet.
+
 \begin{lstlisting}[language=bash]
- $ cd /sys/kernel/debug/tracing
- $ echo 1 > events/sched/enable
+$ cd /sys/kernel/debug/tracing/events/ext4
+ # ENABLE ALL EVENTS FROM THIS GROUP
+$ echo 1 > ./enable
+ # DISBALE ALL EVENTS
+$ echo 0 > ./enable
+
+ # ENBABLE SPECIFIC EVENT
+$ echo 1 > ./ext4_readpage/enable
+$ echo 1 > ./ext4_writepage/enable
 \end{lstlisting}
 
 \hypertarget{kprobes}{%

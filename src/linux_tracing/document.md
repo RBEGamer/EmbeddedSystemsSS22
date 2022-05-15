@@ -8,11 +8,10 @@ Die Linux-Tracing Funktionalität und die bestehenden Tools, welche im Linux-Ker
 ## Relevanz
 
 * multicore systeme unterscheid mikotrkontroller
-
+* moderne linux systeme sind sehr komplex und bestehen aud vielen Softwaremodulen, welche untereinander interagieren
+* systemnahes debugging, kann dann dabei helfen,  schwer zu erkennde und nicht einfach reproduzierbare fehler aufzufinden
+* auch möglichkeit bei custom driver deugging wärend des bootvorgangsb
 ## Tracing
-
-
-## Ursprung
 
 
 # Grundlagen
@@ -123,10 +122,30 @@ format:
 
 ## Abfangen von Events
 
+Um ein Event abfangen zu können, muss dies zuerst für die gewünschten Events aktiviert werden.
+Hierzu werden die Event-Interface-Dateien verwendet, welche sich in jeder Event-Gruppe befinden.
+Die einfachste Methode ist es, eine `1` oder `0` in die `enable`-Datei der Gruppe zu schreiben.
+Ein spezifisches Event kann mit der gleiche Methode aktiviert werden. Hierzu wirde die `enable`-Datei im eigentlichen Event-Ordner verwendet anstatt jene, welche ich in de Event-Gruppe befindet.
+
+
+
+
 ```bash
- $ cd /sys/kernel/debug/tracing
- $ echo 1 > events/sched/enable
+$ cd /sys/kernel/debug/tracing/events/ext4
+ # ENABLE ALL EVENTS FROM THIS GROUP
+$ echo 1 > ./enable
+ # DISBALE ALL EVENTS
+$ echo 0 > ./enable
+
+ # ENBABLE SPECIFIC EVENT
+$ echo 1 > ./ext4_readpage/enable
+$ echo 1 > ./ext4_writepage/enable
 ```
+
+
+
+
+
 ### kprobes
 
 Kprobes können dazu verwendet werden, Laufzeit und Performance-Daten des Kernels zu sammeln.
@@ -269,14 +288,69 @@ Im folgenden ist die grafische Darstellung zu sehen. Dabei besitzt jeder Task ei
 
 ![Kernelshark \label{kernelshark}](images/kernelshark.png)
 
-# Interpretation des Kernel-Trace Ergebnisses
 
 
-# Beispiel - TCP Paketanalyse Beispiel
 
-Dieses erste Beispiel
+# Beispiel - TCP Paketanalyse
+
+Dieses Beispiel soll zeigen, wie der Empfang von TCP-Netzwerkpaketen auf Paketverlust auf einem System überprüft werden kann.
+Hierbei soll analysiert werden, wie das System auf eine unerwartet große Menge an TCP-Paketen reagiert.
 
 
+Hierbei wird auf dem zu analysierenden System `bpftrace` verwendet. Unter Debian-Systemen kann dies einfach über den APT-Package-Manager installiert werden. Jedoch ist diese Version welche in der Registry hinterlegt ist meist nicht aktuell.
+Das folgende Beispiel erfodert die Version `>= 0.14`.
+Somit muss `bpftrace` aus den Quellen gebaut werden, da in der APT-Registry nur die Version `0.11` zur Verfügung stand.
+
+```bash
+# INSTALL FROM SOURCE
+$ git clone https://github.com/iovisor/bpftrace ./bpftrace
+$ cd ./bpftrace && mkdir -p build && cmake -DCMAKE_BUILD_TYPE=Release . && make -j20
+$ sudo make install
+# GET TCP DROP EXAMPLE
+$ cd ~ && wget https://raw.githubusercontent.com/iovisor/bpftrace/master/tools/tcpdrop.bt
+```
+
+Um eine Lastspitze auf dem System zu erzeugen wurde das Netzwerkbenchmark-Tool `ntttcp` verwendet. Mit diesem ist es möglich UDP und TCP Pakete mit verschiedenen Paketgrößen zu generieren.
+Hierzu werden zwei Instanzen benötigt, der Server und der Client.
+
+
+```bash
+# START SERVER
+$ ntttcp -r
+------------------------------------------------------------
+Server listening on TCP port 5001
+TCP window size:  128 KByte (default)
+------------------------------------------------------------
+
+# RUN bpftrace RECORD
+$ sudo bpftrace -o ~/tcpdrop_log -f text -v ~/tcpdrop.bt 
+INFO: node count: 171
+Program ID: 146
+The verifier log: 
+processed 374 insns (limit 1000000) max_states_per_insn 0 total_states 7 peak_states 7 mark_read 1
+Attaching BEGIN
+
+# START CLIENT
+$ ntttcp -s127.0.0.1 -t0
+NTTTCP for Linux 1.4.0
+---------------------------------------------------------
+INFO: running test in continuous mode. please monitor throughput by other tools
+INFO: 64 threads created
+INFO: 64 connections created in 1033569 microseconds
+INFO: Network activity progressing...
+```
+
+
+Nachdem `ntttcp` nach einigen Minuten gestoppt wurde, wurde auch die `bpftrace` Aufzeichnung gestoppt.
+D
+
+```bash
+$ ip -s link show enp5s0
+2: enp5s0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP mode DEFAULT group default qlen 1000
+    link/ether b4:2e:99:fb:4a:2b brd ff:ff:ff:ff:ff:ff
+    RX: bytes  packets  errors  dropped overrun mcast   
+    8188684166 5702925  0       16755   0       14157   
+```
 
 # Beispiel - Identifikation von Laufzeitproblemen
 
@@ -341,7 +415,7 @@ Zur Aufzeichnung des Trace-Logs wurde `trace-cmd` verwendet. Auf dem Zielsystem 
 ```bash
 $ echo 1 > /sys/kernel/debug/tracing/tracing_on
 $ cat /sys/kernel/debug/tracing/trace
-$echo > /sys/kernel/debug/tracing/trace
+$ echo > /sys/kernel/debug/tracing/trace
 
 ```
 
