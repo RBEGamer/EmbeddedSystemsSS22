@@ -74,6 +74,7 @@ spi
 tcp
 timer
 # => TIMER_STOP, TIMER_INIT, TIMER_EXPIRED
+[...]
 ```
 
 Alle Events sind in Gruppen gebündelt. Alle Events, welche das `ext4`-Filesystem betreffen, befinden sich im `ext4`-Ordner.
@@ -90,7 +91,7 @@ ext4_write_end
 ext4_writepage
 ext4_readpage
 ext4_error
-
+[...]
 # INTERFACE FOR EVENT SETUP
 enable
 filter
@@ -98,7 +99,7 @@ format
 ```
 
 Die optionale `format`-Datei kann zusätzliche Informationen bereitstellen über das, durch das Event bereitgestellt Format der Ausgabe.
-Das folgende Beispiel zeigt das Ausgabeformat für die Formatbeschreibung für das Scheduler-Wakeup `sched_wakeup`-Event.
+Das folgende Beispiel zeigt das Ausgabeformat für das Scheduler-Wakeup `sched_wakeup`-Event.
 Somit kann nicht nur in Erfahrung gebracht werden, wann und ob das Event ausgelößt hat, sondern es können auch weitere Event-Spezifische Informationen durch das Event gemeldet werden. 
 
 ```bash
@@ -128,27 +129,25 @@ Die einfachste Methode ist es, eine `1` oder `0` in die `enable`-Datei der Grupp
 Ein spezifisches Event kann mit der gleiche Methode aktiviert werden. Hierzu wirde die `enable`-Datei im eigentlichen Event-Ordner verwendet anstatt jene, welche ich in de Event-Gruppe befindet.
 
 
-
-
 ```bash
 $ cd /sys/kernel/debug/tracing/events/ext4
- # ENABLE ALL EVENTS FROM THIS GROUP
+# ENABLE ALL EVENTS FROM THIS GROUP
 $ echo 1 > ./enable
- # DISBALE ALL EVENTS
+# DISBALE ALL EVENTS
 $ echo 0 > ./enable
-
- # ENBABLE SPECIFIC EVENT
+# ENBABLE SPECIFIC EVENT
 $ echo 1 > ./ext4_readpage/enable
 $ echo 1 > ./ext4_writepage/enable
 ```
 
+Nach dem Aktivieren der Events, können 
 
 
 
 
 ### kprobes
 
-Kprobes können dazu verwendet werden, Laufzeit und Performance-Daten des Kernels zu sammeln.
+`kprobes` können dazu verwendet werden, Laufzeit und Performance-Daten des Kernels zu sammeln.
 Der Vorteil and diesen ist, dass diese Daten ohne Unterbrechnung der Ausführung auf CPU-Instruktions-Ebene aggregiert werden können, anders wie bei dem Debuggen eines Programms mittels Breakpoints.
 Ein weiterer Vorteil ist, dass das Registrieren der Kprobes dynamisch zur Laufzeit und ohne Änderungen des Programmcodes geschieht.
 
@@ -192,7 +191,7 @@ Mit dem folgenden Befehl kann der Inhalt des Ringuffers, auch während einer Auf
 ```bash
 $ less trace
 ```
-Das Lesen während einer Aufzeichnung mit trace hat keinerlei Einfluss auf den Inhalt des Ringpuffers. Die Ausgabe des letzten Kommandos wird dabei in einem menschenlesbaren Format dargestellt:
+Das Lesen während einer Aufzeichnung mit trace hat keinerlei Einfluss auf den Inhalt des Ringpuffers. Die Ausgabe des letzten Kommandos wird dabei in einem menschenlesbaren Format dargestellt \ref{trace-log}:
 
 ![Trace-Log \label{trace-log}](images/trace-log-print.png)
 
@@ -201,7 +200,7 @@ Die bisheirgen Aufzeichnungen der Ereignisse können mit einem einfachen Befehl 
 ```bash
 $ echo > trace
 ```
-Um einen Überlauf an Informationen zu verhinden kann die Aufzeichnung auch konsumierend gelesen werden. Somit werden beim Lesen zeitgleich diese aus dem Ringbuffer entfernt.
+Um einen Überlauf an Informationen zu verhinden kann die Aufzeichnung auch konsumierend gelesen werden. Somit werden beim Lesen zeitgleich diese aus dem Ringbuffer entfernt \ref{ringbuffer}.
 
 Eine weitere Kernpunkt ist, dass in Mehrkernsystemen für jeden einzelnen Core ein separater Ringbuffer existiert. Damit die Analyse von verschiedenen Events getrennt werden kann, kann mit jeder weiteren Instanz pro Core ein weiterer Ringbuffer angelgt werden. Dies erfolgt im Untervereziechnis `instances/`.
 
@@ -222,19 +221,15 @@ Das Tool `trace-cmd` ist das bekannteste und am meisten genutzte Hilfmittel zur 
 
 ```bash
 # CHECK IF TRACING IS ENABLED
-# RUN AS SUDO
-$ mount | grep tracefs
-## => none on /sys/kernel/tracing type tracefs (rw,relatime,seclabel)
-
-# IF TRACING IS NOT ACTIVE, ENABLE IT FIRST
-
+$ sudo mount | grep tracefs
+none on /sys/kernel/tracing type tracefs (rw,relatime,seclabel)
 ## ONLY SCHEDULER EVENTS
 $ echo sched_wakeup >> /sys/kernel/debug/tracing/set_event
-## ALL EVENTS
+## ALL EVENTS USING set_event
 $ echo *:* > /sys/kernel/debug/tracing/set_event
-
-
 # RECORD
+$ trace-cmd record ./program_executable
+# RECORD SPECIFIC EVENT
 $ trace-cmd record -e sched ./program_executable
 ```
 
@@ -243,7 +238,7 @@ $ trace-cmd record -e sched ./program_executable
 Mit dem letzten Befehl werden die ganzen Events zu Scheduler aufgezeichnet. Dabei werden während der Aufzeichnung kontinuierlich die Ringbuffer in konsumierender Form ausgelesen und in die Datei `trace.dat` geschrieben, falls mit dem `-o` keine eigene Datei eingegeben wurde. Als Informationen werden zu dem Inhalt des Ringbuffers auch zusätzlich notwendige Informationen über das Target, für die Auswertung auf beliebigen System gespeichert.
 
 Die `trace-cmd` Konsolenanwendung dient nicht nur zur Aufzeichnung der Trace-Events, sondern bietet auch die Möglichkeit augezeichnetet Reports visuell darzustellen.
-Die Ausgabe erfolgt mit dem Befehl `trace-cmd report [-i <Dateiname>]` als Tabelle in der Konsole und ist somit rein Textbasiert, siehe dazu die nächste Abbildung.
+Die Ausgabe erfolgt mit dem Befehl `trace-cmd report [-i <Dateiname>]` als Tabelle in der Konsole und ist somit rein Textbasiert \ref{trace-cmd-report}.
 
 ![trace-cmd Report \label{trace-cmd-report}](images/trace-cmd.png)
 
@@ -260,22 +255,22 @@ Dieses bietet jedoch zusätzlich eine eigene Skripsprache mit der nicht nur Aggr
 # Block I/O latency as a histogram EXAMPLE
 $ wget https://raw.githubusercontent.com/iovisor/bpftrace/master/tools/biolatency.bt
 $ bftrace ./biolatency.bt
-# @usecs:
-# [512, 1K)             10 |@                       |
-# [ 1K, 2K)            426 |@@@@@@@@@@@@@@@@@@      |
-# [2K, 4K)             230 |@@@@@@@@@@@@@@          |
-# [4K, 8K)               9 |@                       |
-# [8K, 16K)            128 |@@@@@@@@@@@@@@@         |
-# [16K, 32K)            68 |@@@@@@@@                |
-# ...
+@usecs:
+[512, 1K)             10 |@                       |
+[ 1K, 2K)            426 |@@@@@@@@@@@@@@@@@@      |
+[2K, 4K)             230 |@@@@@@@@@@@@@@          |
+[4K, 8K)               9 |@                       |
+[8K, 16K)            128 |@@@@@@@@@@@@@@@         |
+[16K, 32K)            68 |@@@@@@@@                |
+[...]
 ```
 
 
 ### Kernelshark
 
-Das zuvor erklärte `tace-cmd` ist wie oben erwähnt nur ein textbasiertes Analysetool. Das kommende Kernelshark Tool bietet dem Anwender
-die Möglichkeit die Traceaufzeichnungen grafisch zu analysieren. Dabei sind die beiden Tools aufeinander abgestimmt und werden
-gemeinsam entwickelt. Auch dieses Tool ist in den meisten Linux Distrubutionen vorinstalliert.
+Das zuvor vorgestellte `tace-cmd` ist wie oben erwähnt nur ein textbasiertes Analysetool.
+Kernelshark Tool bietet dem Anwender die Möglichkeit die Traceaufzeichnungen grafisch zu analysieren. Dabei sind die beiden Tools aufeinander abgestimmt und werden gemeinsam entwickelt.
+Auch dieses Tool ist in den meisten Linux Distributionen vorinstalliert.
 
 Das vom trace-cmd erzeugte `trace.dat-Format` wird im Kernelshark als Eingabe erwartet. Wenn im folgendem ersten Befehl nichts eingegeben, dann wird nach der entsprechenden `trace.dat` im Verzeichnis gesucht.
 
@@ -296,10 +291,10 @@ Im folgenden ist die grafische Darstellung zu sehen. Dabei besitzt jeder Task ei
 Dieses Beispiel soll zeigen, wie der Empfang von TCP-Netzwerkpaketen auf Paketverlust auf einem System überprüft werden kann.
 Hierbei soll analysiert werden, wie das System auf eine unerwartet große Menge an TCP-Paketen reagiert.
 
-
+## bpftrace Installation
 Hierbei wird auf dem zu analysierenden System `bpftrace` verwendet. Unter Debian-Systemen kann dies einfach über den APT-Package-Manager installiert werden. Jedoch ist diese Version welche in der Registry hinterlegt ist meist nicht aktuell.
 Das folgende Beispiel erfodert die Version `>= 0.14`.
-Somit muss `bpftrace` aus den Quellen gebaut werden, da in der APT-Registry nur die Version `0.11` zur Verfügung stand.
+Somit muss `bpftrace` aus den Quellen gebaut werden, da in der APT-Registry nur die Version `~0.11` zur Verfügung stand.
 
 ```bash
 # INSTALL FROM SOURCE
@@ -308,9 +303,10 @@ $ cd ./bpftrace && mkdir -p build
 $ cmake -DCMAKE_BUILD_TYPE=Release . && make -j20
 $ sudo make install
 # GET TCP DROP EXAMPLE
-$ cd ~
-$ wget https://raw.githubusercontent.com/iovisor/bpftrace/master/tools/tcpdrop.bt
+$ cp ./bpftrace/tools/tcpdrop.bt ~
 ```
+
+## TCPDROP.BT
 
 Das `tcpdrop.bt` Script, welches in diesem Beispiel verwendet wird, registriert eine `kprobe` auf die `tcp_drop()` Funktion und 
 nutzt anschließend `printf` Funktion um die Informationen in den Userspace zu loggen.
@@ -334,8 +330,14 @@ kprobe:tcp_drop
 ```
 
 Um eine Lastspitze auf dem System zu erzeugen wurde das Netzwerkbenchmark-Tool `ntttcp` verwendet. Mit diesem ist es möglich UDP und TCP Pakete mit verschiedenen Paketgrößen zu generieren.
-Hierzu werden zwei Instanzen benötigt, der Server und der Client.
+Hierzu werden zwei Instanzen benötigt, der Server und der Client, welche auf dem gleichen System aber auch auf verschiedenen Systemen ausgeführt werden können.
 
+## Aufzeichnung Trace-Log
+
+Um die Messung zu starten, wurde zuerst der `ntttcp`-Server gestartet, dieser empfängt die vom Sender gesendeten Pakete.
+Im zweiten Schritt wurde der `ntttcp`-Client auf dem anderen System gestartet. Hier wurde mittels `-t` Parameter die Laufzeit auf unendlich gestellt, somit werden durchgehend Pakete an den Server gesendet. Die Paketgröße wurde hier auf `4096Kbyte` gestellt um so eine Fragmentierung des TCP-Paketes bei einer MTU von `1500byte` zu erzwingen.
+
+Im Anschluss wurde `bpftrace` gestartet, welches die Events als Logdatei `tcpdrop_log` in einem lesabren Textformat ausgeben soll.
 
 ```bash
 # START SERVER
@@ -344,6 +346,7 @@ NTTTCP for Linux 1.4.0
 ---------------------------------------------------------
 21:27:58 INFO: 17 threads created
 
+
 # RUN bpftrace RECORD
 $ sudo bpftrace -o ~/tcpdrop_log -f text -v ~/tcpdrop.bt 
 INFO: node count: 171
@@ -351,6 +354,7 @@ Program ID: 146
 The verifier log: 
 processed 374 insns (limit 1000000) max_states_per_insn 0 total_states 7 peak_states 7 mark_read 1
 Attaching BEGIN
+[...]
 
 # START CLIENT # PACKET SIZE 4096K
 $ ntttcp -s10.11.12.1 -t -l 4096K
@@ -362,9 +366,14 @@ NTTTCP for Linux 1.4.0
 21:28:52 INFO: Network activity progressing...
 ```
 
-
 Nach einigen Sekunden wurde `ntttcp` und `bpftrace` die Aufzeichnung manuell gestoppt.
-Der aufgezeichnete Trace für das `tcp_drop`-Event befindet sich in der `tcpdrop_log` Datei
+Der aufgezeichnete Trace für das `tcp_drop`-Event befindet sich in der `tcpdrop_log` Datei.
+
+## Ausgabe
+
+Die Ausgabe der Logdatei stellt Textbasiert nicht nur dar ob ein TCP-Paket verloren wurde, sondern gibt auch zusätzliche Informationen aus. Jeder Event-Trigger des `tcp_drop()` Events wird dabei mit der Systemzeit, Prozess-ID und dem Programm eingeleitet unter welches das Event ausgelößt hat. In diesem Fall wurde der Paketverlust durch ein Empfangenes Paket der `ntttcp`-Anwendung ausgelößt.
+Die Senderichtung des Pakets kann anhand der Quell- und Empfangs-IP-Adresse ermittelt werden.
+Danach folgt der Kernel-Stacktrace, in welchem der Funktionsaufruf-Verlauf bis zum Auslösen des überwachten Event aufgeführt ist.
 
 ```bash
 $ cat ~/tcpdrop_log
@@ -382,36 +391,12 @@ $ cat ~/tcpdrop_log
         ip_local_deliver+250
         ip_rcv_finish+182
         ip_rcv+204
-        __netif_receive_skb_one_core+136
-        __netif_receive_skb+24
-        process_backlog+169
-        __napi_poll+46
-        net_rx_action+575
-        __do_softirq+204
-        irq_exit_rcu+164
-        sysvec_apic_timer_interrupt+124
-        asm_sysvec_apic_timer_interrupt+18
-        clear_page_erms+7
-        get_page_from_freelist+730
-        __alloc_pages+379
-        alloc_pages+135
-        skb_page_frag_refill+128
-        sk_page_frag_refill+33
-        tcp_sendmsg_locked+1049
-        tcp_sendmsg+45
-        inet_sendmsg+67
-        sock_sendmsg+94
-        __sys_sendto+275
-        __x64_sys_sendto+41
+        [...]
         do_syscall_64+97
         entry_SYSCALL_64_after_hwframe+68
         # FIRST FUNCTION CALL
 [...]
 ```
-
-Die Ausgabe der Logdatei stellt Textbasiert nicht nur dar ob ein TCP-Paket verloren wurde, sondern gibt auch zusätzliche Informationen aus. Jeder Event-Trigger des `tcp_drop()` Events wird dabei mit der Systemzeit, Prozess-ID und dem Programm eingeleitet unter welches das Event ausgelößt hat. In diesem Fall wurde der Paketverlust durch ein Empfangenes Paket der `ntttcp`-Anwendung ausgelößt.
-Die Senderichtung des Pakets kann anhand der Quell- und Empfangs-IP-Adresse ermittelt werden.
-Danach folgt der Kernel-Stacktrace, in welchem der Funktionsaufruf-Verlauf bis zum Auslösen des überwachten Event aufgeführt ist.
 
 Somit ist aus den Logs zu entnehmen, dass unter den getesteten Bedingungen auf dem System TCP Pakete verloren gingen, eine tiefergehende Untersuchung des Kernel-Stacktrace kann hierzu genauere Informationen bereitstellen.
 Das Beispiel zeigt auch, wie nicht nur das Auslösen von Events protokolliert werden kann, sondern auch mittels einfacher Script-Befehle komplexe Debug-Informationen systematisch gewonnen werden können.
@@ -430,67 +415,101 @@ Die zugrunde liegende Software wurde bisher nur auf einem Linux-Realtime Kernel 
 jedoch erfordert die Implementation neuer Features eine neuere Kernel-Version, welche noch nicht als RT-Version auf dem System zur Verfügung steht.
 Somit soll ermittelt werden, ob die unmodifizierte Software eins zu eins auf dem neuen System lauffähig ist und die Laufzeitandorderungen erfüllt.
 
-Das System besteht hier aus einem `RaspberryPi 4B` mit einer angeschlossenen LED am GPIO-Port `25`
-und zu testende Programm lässt diese dabei in 100ms Abständen Blinken.
+Das System besteht hier aus einem `RaspberryPi 4B` mit einer angeschlossenen LED am GPIO-Port `24`
+und zu testende Programm toggelt dabei den GPIO in einer Dauerschleife.
 
 ```c++
+//gpio_test.cpp
 #include <iostream>
-#include <wiringPi.h>
+#include <pigpio.h>
 #include <csignal>
 using namespace std;
 
+volatile bool running = true;
+const int GPIO = 24;
 void signal_callback_handler(int signum) {
-
+    running = false;
 }
 
 int main(int argc, char *argv[])
 {
     //REGISTER SIGNAL HANDLER
     signal(SIGINT, signal_callback_handler);
+  
+    if (gpioInitialise() < 0){
+        return -1;
+    }
 
-    wiringPiSetup();			// Setup the library
-    pinMode(0, OUTPUT);		// Configure GPIO0 as an output
-    pinMode(1, INPUT);		// Configure GPIO1 as an input
+    gpioSetMode(GPIO, PI_OUTPUT);
+
     bool state = false;
 
-    while(1)
+    while(running)
     {
         state = !state;
-	    digitalWrite(0, state);
-        delay(500);
+	    gpioWrite(GPIO, (int)state);
     }
 	return 0;
 }
 ```
 
-Für den Test wurde als RT Kernel die Version `4.19.59-rt23-v7l+` verwendet, welche nicht alle Funktionaltitäten des aktuellen `5.10` Kernel besitzt.
-In diesem fiktiven Beispiel, wird die `systemd-networking >V.248` Funktionalität für das Batman-Prokoll benötigt, welche den Grund für die Umstellung darstellt und nicht trivial in den `4.x` Kernel integriert werden kann.
+Das Programm kann mittels `g++` Compiler für das Zielsystem übersetzt werden.
+Da zur Ansteuerung des GPIO Ports die `pigpio` Bibliothek verwendet wurde, welche eine Alternative zur obsoltenen `WiringPi` Bibliothek darstellt, muss diese noch installiert werden.
 
-Die Messungen wurden zuerst auf dem aktuellen `5.10 LTS` Kernel aufgezeichnet und im Anschluss wurde der RT-Kernel auf einem anderen System per Cross-Compilation aus dem `rpi-4.19.y-rt` Branch des `raspberrypi/linux` Repository gebaut.
+```bash
+# INSTALL PIGPIO LIB
+$ git clone https://github.com/joan2937/pigpio.git ./pigpio
+$ cd pigpio && make && sudo make install && cd ~
+# COMPILE
+$ g++ -Wall -pthread -o gpio_test gpio_test.cpp -lpigpio -lrt
+# TEST
+$ ./gpio_test
+```
+
+
+## Kernel des Testsystems
+
+
+Für den Test wurde als RT Kernel die Version `4.19.59-rt23-v7l+` verwendet, welche nicht alle Funktionaltitäten des aktuellen `5.10` Kernel besitzt.
+In diesem fiktiven Beispiel, wird die `systemd-networking >V.248` Funktionalität für das Batman-Prokoll benötigt, welche den Grund für die Umstellung darstellt und nicht trivial in den `4.x` Kernel integriert werden kann. Die Messungen wurden zuerst auf dem aktuellen `5.10 LTS` Kernel aufgezeichnet und im Anschluss wurde der RT-Kernel auf einem anderen System per Cross-Compilation aus dem `rpi-4.19.y-rt` Branch des `raspberrypi/linux` Repository gebaut.
 Dieser Schritt war notwendig, da es kein fertiges RT-Kernel Image zur Verfügung stand.
 Die erzeugten Dateien wurden dann auf die Boot-Partition der SD Karte geschrieben und in der `/boot/config.txt` Datei wurde der neue Kernel hinterlegt `kernel=kernel7_rt.img`.
-
 
 
 ## Aufzeichnung Trace-Log
 
 Zur Aufzeichnung des Trace-Logs wurde `trace-cmd` verwendet. Auf dem Zielsystem wurde dabei nur die Aufzeichnung vorgenommen und die Analyse der Logs erfolgte auf einem seperaten System.
-
-### Aktivierung der Events
+Für den Test wird zuerst die `tracing`-Funktionalität aktiviert und alle `sched` und `gpio`-Events aktiviert.
 
 ```bash
+# ENABLE TRACING
 $ echo 1 > /sys/kernel/debug/tracing/tracing_on
 $ cat /sys/kernel/debug/tracing/trace
+# CLEAR RECENT EVENT LOG
 $ echo > /sys/kernel/debug/tracing/trace
 
+# ENABLE ALL SCHEDULER EVENTS
+echo 1 > /sys/kernel/debug/tracing/events/sched/enable
+# ENABLE ALL GPIO EVENTS
+echo 1 > /sys/kernel/debug/tracing/events/gpio/enable
+# RUN TEST
+sudo trace-cmd record -e sched -e gpio -o ./gpio_test_trace_lts ./gpio_test
 ```
 
-
-```bash
-trace-cmd record -e sched ./blink
-``` 
-
-## Visualisierung und Beurteilung des Trace-Logs mittels kernelshark
+Im Anschluss wurde das Programm gestartet und die Events mittels `trace-cmd` aufgezeichnet.
+Da das Testprogramm nicht automatisch terminiert (wie z.B. `sleep 5`), muss dieses mittels `Ctl+C` manuell beendet werden.
+Die resultierende Ausgabedatei `gpio_test_trace_*` enthält die von `trace-cmd` geloggten Daten.
 
 
+
+## Visualisierung und Beurteilung des Trace-Logs
+
+### RT Kernel
+
+### LTS Kernel
+
+```
 # Fazit
+
+* aufzeicnugn auf device => headless
+* analyse visuell
