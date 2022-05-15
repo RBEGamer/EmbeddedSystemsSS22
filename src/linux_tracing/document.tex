@@ -56,34 +56,100 @@ aktivierung der \passthrough{\lstinline!tracing!}-Ordner vorhanden. In
 diesem werden die verfügbaren Events in Gruppen (Ordnern) dargestellt,
 auf welche im späteren Verlauf reagiert werden können.
 
-\begin{lstlisting}[language=bash]
-# GET TRACERS
-$ cat /sys/kernel/debug/tracing/available_tracers
-
-# GET AVAILABLE EVENT LIST
-$ cd /sys/kernel/debug/tracing
-$ ls -1 events/
-
-# sched
-# irq
-\end{lstlisting}
-
-\hypertarget{beispiel-fuxfcr-events}{%
-\section{Beispiel für Events}\label{beispiel-fuxfcr-events}}
-
 \begin{itemize}
 \tightlist
 \item
-  file operartionen
-\item
-  netzzwerk zugriffe
+  was sind tracers
 \end{itemize}
 
-\hypertarget{scheduler}{%
-\subsection{Scheduler}\label{scheduler}}
+\begin{lstlisting}[language=bash]
+# GET TRACERS
+$ cat /sys/kernel/debug/tracing/available_tracers
+hwlat blk mmiotrace function_graph wakeup_dl wakeup_rt wakeup function nop
+\end{lstlisting}
 
-\hypertarget{irq}{%
-\subsection{IRQ}\label{irq}}
+In der \passthrough{\lstinline!ls!} Ausgabe des
+\passthrough{\lstinline!events!}-Ordners des Debug-Filesystems ist zu
+sehen, welche Events abgefangen werden können und mittels der
+Linux-Tracing-Tools protokoliert werden können.
+
+\begin{lstlisting}[language=bash]
+# GET AVAILABLE EVENT LIST
+$ cd /sys/kernel/debug/tracing/events
+$ ls -lah | awk '{print $9}'
+alarmtimer
+clk
+cpuhp
+drm
+exceptions
+ext4
+# =>  EXT4_READPAGE, EXT4_WRITEPAGE, EXT4_ERROR, EXT4_FREE_BLOCKS
+filelock
+filemap
+fs_dax
+ftrace
+gpio
+# => GPIO_DIRECTION, GPIO_VALUE
+hda
+i2c
+irq
+net
+smbus
+# => READ, WRITE, REPLY
+sock
+# => SOCKET_STATE_CHANGED, SOCK_EXCEED_BUFFER_LIMIT, SOCK_REC_QUEUE_FULL
+spi
+tcp
+timer
+# => TIMER_STOP, TIMER_INIT, TIMER_EXPIRED
+\end{lstlisting}
+
+Alle Events sind in Gruppen gebündelt. Alle Events, welche das
+\passthrough{\lstinline!ext4!}-Filesystem betreffen, befinden sich im
+\passthrough{\lstinline!ext4!}-Ordner. Die Auflistung zeigt einige der
+für das \passthrough{\lstinline!ext4!} zur Verfügung stehenden Events.
+Zudem befinden sich zwei zusätzliche Dateien
+\passthrough{\lstinline!enable!}, \passthrough{\lstinline!filter!}in
+diesem Ordner. Durch diese ist es später möglich anzugeben, ob dieses
+Event aufgezeichnet werden soll.
+
+\begin{lstlisting}[language=bash]
+$ cd /sys/kernel/debug/tracing/events/ext4
+$ ls -lah | awk '{print $9}'
+
+# EVENTS FOR EXT4
+ext4_write_end
+ext4_writepage
+ext4_readpage
+ext4_error
+
+# INTERFACE FOR EVENT SETUP
+enable
+filter
+format
+\end{lstlisting}
+
+Die optionale \passthrough{\lstinline!format!}-Datei kann zusätzliche
+Informationen bereitstellen über das, durch das Event bereitgestellt
+Format der Ausgabe.
+
+\begin{lstlisting}[language=bash]
+$  cat /sys/kernel/debug/tracing/events/sched/sched_wakeup/format
+name: sched_wakeup
+ID: 60
+format:
+        field:unsigned short common_type;       offset:0;       size:2;
+        field:unsigned char common_flags;       offset:2;       size:1;
+        field:unsigned char common_preempt_count;       offset:3;       size:1;
+        field:int common_pid;   offset:4;       size:4;
+        field:int common_tgid;  offset:8;       size:4;
+
+        field:char comm[TASK_COMM_LEN]; offset:12;      size:16;
+        field:pid_t pid;        offset:28;      size:4;
+        field:int prio; offset:32;      size:4;
+        field:int success;      offset:36;      size:4;
+        field:int cpu;  offset:40;      size:4;
+\end{lstlisting}
 
 \hypertarget{abfangen-von-events}{%
 \section{Abfangen von Events}\label{abfangen-von-events}}
@@ -136,10 +202,6 @@ dynamisch zur Laufzeit und ohne Änderungen des Programmcodes geschieht.
 \item
   wie verhindern
 \end{itemize}
-
-\hypertarget{tracing-auf-mikrokontrollern}{%
-\chapter{Tracing auf Mikrokontrollern
-?????}\label{tracing-auf-mikrokontrollern}}
 
 \hypertarget{tools}{%
 \chapter{Tools}\label{tools}}
@@ -292,16 +354,6 @@ $ bftrace ./biolatency.bt
 # ...
 \end{lstlisting}
 
-\hypertarget{netzwerk-paketanalyse-beispiel}{%
-\subsection{Netzwerk Paketanalyse
-Beispiel}\label{netzwerk-paketanalyse-beispiel}}
-
-\begin{itemize}
-\tightlist
-\item
-  mit bfttrac verworfene netzwerkpakete zählen wenn zu viel trafic
-\end{itemize}
-
 \hypertarget{kernelshark}{%
 \subsection{Kernelshark}\label{kernelshark}}
 
@@ -337,12 +389,22 @@ genutzten Logic 2 Software.
 \chapter{Interpretation des Kernel-Trace
 Ergebnisses}\label{interpretation-des-kernel-trace-ergebnisses}}
 
-\hypertarget{beispiel-der-identifikation-von-laufzeitproblemen}{%
-\chapter{Beispiel der Identifikation von
-Laufzeitproblemen}\label{beispiel-der-identifikation-von-laufzeitproblemen}}
+\hypertarget{beispiel---tcp-paketanalyse-beispiel}{%
+\chapter{Beispiel - TCP Paketanalyse
+Beispiel}\label{beispiel---tcp-paketanalyse-beispiel}}
 
-In diesem Abschnitt soll an einem einfache Beispiel gezeigt werden \#\#
-Ausgangsszenario
+Dieses erste Beispiel
+
+\hypertarget{beispiel---identifikation-von-laufzeitproblemen}{%
+\chapter{Beispiel - Identifikation von
+Laufzeitproblemen}\label{beispiel---identifikation-von-laufzeitproblemen}}
+
+In diesem Abschnitt soll an einem einfache Beispiel gezeigt werden, wie
+es mittels Tracing möglich ist, eine Laufzeitanalyse auf verschiedenen
+Systemen für eine Anwendung durchzuführen.
+
+\hypertarget{ausgangsszenario}{%
+\section{Ausgangsszenario}\label{ausgangsszenario}}
 
 Als Ausgangspunkt dieses Beispiels, soll das Laufzeitverhalten eines
 Programms auf einem Linux-System analysiert werden. Die zugrunde

@@ -35,28 +35,91 @@ Durch das Debug-Filesystem ist jetzt der Zugriff auf die Debug und insbesondere 
 Im Debug-Filesystem ist nach aktivierung der `tracing`-Ordner vorhanden.
 In diesem werden die verfügbaren Events in Gruppen (Ordnern) dargestellt, auf welche im späteren Verlauf reagiert werden können.
 
+* was sind tracers
 
 ```bash
 # GET TRACERS
 $ cat /sys/kernel/debug/tracing/available_tracers
-
-# GET AVAILABLE EVENT LIST
-$ cd /sys/kernel/debug/tracing
-$ ls -1 events/
-
-# sched
-# irq
+hwlat blk mmiotrace function_graph wakeup_dl wakeup_rt wakeup function nop
 ```
 
-## Beispiel für Events
 
-* file operartionen
-* netzzwerk zugriffe
+In der `ls` Ausgabe des `events`-Ordners des Debug-Filesystems ist zu sehen, welche Events abgefangen werden können und mittels der Linux-Tracing-Tools protokoliert werden können.
+
+```bash
+# GET AVAILABLE EVENT LIST
+$ cd /sys/kernel/debug/tracing/events
+$ ls -lah | awk '{print $9}'
+alarmtimer
+clk
+cpuhp
+drm
+exceptions
+ext4
+# =>  EXT4_READPAGE, EXT4_WRITEPAGE, EXT4_ERROR, EXT4_FREE_BLOCKS
+filelock
+filemap
+fs_dax
+ftrace
+gpio
+# => GPIO_DIRECTION, GPIO_VALUE
+hda
+i2c
+irq
+net
+smbus
+# => READ, WRITE, REPLY
+sock
+# => SOCKET_STATE_CHANGED, SOCK_EXCEED_BUFFER_LIMIT, SOCK_REC_QUEUE_FULL
+spi
+tcp
+timer
+# => TIMER_STOP, TIMER_INIT, TIMER_EXPIRED
+```
+
+Alle Events sind in Gruppen gebündelt. Alle Events, welche das `ext4`-Filesystem betreffen, befinden sich im `ext4`-Ordner.
+Die Auflistung zeigt einige der für das `ext4` zur Verfügung stehenden Events.
+Zudem befinden sich zwei zusätzliche Dateien `enable`, `filter `in diesem Ordner.
+Durch diese ist es später möglich anzugeben, ob dieses Event aufgezeichnet werden soll.
+
+```bash
+$ cd /sys/kernel/debug/tracing/events/ext4
+$ ls -lah | awk '{print $9}'
+
+# EVENTS FOR EXT4
+ext4_write_end
+ext4_writepage
+ext4_readpage
+ext4_error
+
+# INTERFACE FOR EVENT SETUP
+enable
+filter
+format
+```
+
+Die optionale `format`-Datei kann zusätzliche Informationen bereitstellen über das, durch das Event bereitgestellt Format der Ausgabe.
+
+```bash
+$  cat /sys/kernel/debug/tracing/events/sched/sched_wakeup/format
+name: sched_wakeup
+ID: 60
+format:
+        field:unsigned short common_type;       offset:0;       size:2;
+        field:unsigned char common_flags;       offset:2;       size:1;
+        field:unsigned char common_preempt_count;       offset:3;       size:1;
+        field:int common_pid;   offset:4;       size:4;
+        field:int common_tgid;  offset:8;       size:4;
+
+        field:char comm[TASK_COMM_LEN]; offset:12;      size:16;
+        field:pid_t pid;        offset:28;      size:4;
+        field:int prio; offset:32;      size:4;
+        field:int success;      offset:36;      size:4;
+        field:int cpu;  offset:40;      size:4;
+```
 
 
 
-### Scheduler
-### IRQ
 
 ## Abfangen von Events
 
@@ -71,6 +134,8 @@ Der Vorteil and diesen ist, dass diese Daten ohne Unterbrechnung der Ausführung
 Ein weiterer Vorteil ist, dass das Registrieren der Kprobes dynamisch zur Laufzeit und ohne Änderungen des Programmcodes geschieht.
 
 ### kretprobes
+
+
 ### CPU-Traps
 
 ### uprobes
@@ -87,8 +152,6 @@ Ein weiterer Vorteil ist, dass das Registrieren der Kprobes dynamisch zur Laufze
 * nur aufzeichnen und später analysieren z.B. auf einem anderen system
 * wie verhindern
 
-
-# Tracing auf Mikrokontrollern ?????
 
 # Tools
 
@@ -188,9 +251,6 @@ $ bftrace ./biolatency.bt
 # ...
 ```
 
-### Netzwerk Paketanalyse Beispiel
-
-* mit bfttrac verworfene netzwerkpakete zählen wenn zu viel trafic
 
 ### Kernelshark
 
@@ -211,9 +271,18 @@ Im folgenden ist die grafische Darstellung zu sehen. Dabei besitzt jeder Task ei
 
 # Interpretation des Kernel-Trace Ergebnisses
 
-# Beispiel der Identifikation von Laufzeitproblemen
 
-In diesem Abschnitt soll an einem einfache Beispiel gezeigt werden
+# Beispiel - TCP Paketanalyse Beispiel
+
+Dieses erste Beispiel
+
+
+
+# Beispiel - Identifikation von Laufzeitproblemen
+
+In diesem Abschnitt soll an einem einfache Beispiel gezeigt werden, wie es mittels Tracing möglich ist, eine Laufzeitanalyse auf verschiedenen Systemen für eine Anwendung durchzuführen.
+
+
 ## Ausgangsszenario
 
 Als Ausgangspunkt dieses Beispiels, soll das Laufzeitverhalten eines Programms auf einem Linux-System analysiert werden.
