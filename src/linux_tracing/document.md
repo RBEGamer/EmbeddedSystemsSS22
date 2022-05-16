@@ -323,6 +323,11 @@ Im folgenden ist die grafische Darstellung zu sehen. Dabei besitzt jeder Task ei
 Dieses Beispiel soll zeigen, wie der Empfang von TCP-Netzwerkpaketen auf Paketverlust auf einem System überprüft werden kann.
 Hierbei soll analysiert werden, wie das System auf eine unerwartet große Menge an TCP-Paketen reagiert.
 
+## Ausgangsszenario
+
+* iot anwendungen
+* viele kleine pakete
+
 ## bpftrace Installation
 Hierbei wird auf dem zu analysierenden System `bpftrace`[@bpftrace] verwendet. Unter Debian-Systemen kann dies einfach über den APT-Package-Manager installiert werden. Jedoch ist diese Version welche in der Registry hinterlegt ist meist nicht aktuell.
 Das folgende Beispiel erfodert die Version `>= 0.14`.
@@ -388,8 +393,8 @@ processed 374 insns (limit 1000000) max_states_per_insn 0
 Attaching BEGIN
 [...]
 
-# START CLIENT # PACKET SIZE 4096K
-$ ntttcp -s10.11.12.1 -t -l 4096K
+# START CLIENT # PACKET SIZE 16Byte
+$ ntttcp -s10.11.12.1 -t -l 16
 NTTTCP for Linux 1.4.0
 ---------------------------------------------------------
 21:28:52 INFO: running test in continuous mode.
@@ -415,16 +420,19 @@ $ cat ~/tcpdrop_log
         #CALLSTACK
         # LAST FUNCTION CALL
         tcp_drop+1
-        tcp_rcv_established+562
-        tcp_v4_do_rcv+328
-        tcp_v4_rcv+3325
-        ip_protocol_deliver_rcu+48
-        ip_local_deliver_finish+72
-        ip_local_deliver+250
-        ip_rcv_finish+182
-        ip_rcv+204
-        [...]
-        do_syscall_64+97
+        tcp_v4_do_rcv+196
+        __release_sock+120
+        __tcp_close+444
+        tcp_close+37
+        inet_release+72
+        __sock_release+66
+        sock_close+21
+        __fput+156
+        ____fput+14
+        task_work_run+112
+        exit_to_user_mode_prepare+437
+        syscall_exit_to_user_mode+39
+        do_syscall_64+110
         entry_SYSCALL_64_after_hwframe+68
         # FIRST FUNCTION CALL
 [...]
