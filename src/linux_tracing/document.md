@@ -33,13 +33,36 @@ $ sudo mount -t debugfs debugfs /sys/kernel/debug
 Durch das Debug-Filesystem ist jetzt der Zugriff auf die Debug und insbesondere auf die Tracing-Daten möglich.
 Im Debug-Filesystem ist nach aktivierung der `tracing`-Ordner vorhanden.
 In diesem werden die verfügbaren Events in Gruppen (Ordnern) dargestellt, auf welche im späteren Verlauf reagiert werden können.
-
-* was sind tracers
+Zudem werden auch die `tracers`
 
 ```bash
 # GET TRACERS
 $ cat /sys/kernel/debug/tracing/available_tracers
 hwlat blk mmiotrace function_graph wakeup_dl wakeup_rt wakeup function nop
+# USE SPECIFIC TRACER
+$ echo function_graph > /sys/kernel/debug/tracing/current_tracer
+# DISABLE TRACER USAGE
+$ echo nop > /sys/kernel/debug/tracing/current_tracer
+```
+
+`tracer` sind zusätzliche Tracing-Tools, welche eine gezieltere Aggregierung von Events z.B. Filterung und somit tiefergehende Analyse erlauben.
+Zum Beispiel erlaubt der `ftrace`-Tracer eine detaillierte Ereignis-Filterung.
+Der `function_graph`-Tracer gibt bei Verwendung zusätzliche Informationen, wie z.B. die Laufzeit von einzelnen Funktionen.
+Auch kann dieser den Stacktrace und den Call-Stack übersichtlich darstellen, indem hier die Namen der aufgerufenen Funktionen ausgegeben werden.
+
+```bash
+# CALL STACK USING FUNCTION_GRAPH TRACER
+$ echo function_graph > /sys/kernel/debug/tracing/current_tracer
+$ cat /sys/kernel/debug/tracing/trace
+# tracer: function_graph
+#
+# CPU-  DURATION          FUNCTION CALLS
+# |     |   |            |  |   |
+ 0)               |      getname() {
+ 0)   4.442 us    |         kmem_cache_alloc() {
+ 0)   1.382 us    |             __might_sleep();
+ 0)   2.478 us    |        }
+ [...]
 ```
 
 
@@ -231,6 +254,8 @@ $ echo *:* > /sys/kernel/debug/tracing/set_event
 $ trace-cmd record ./program_executable
 # RECORD SPECIFIC EVENT
 $ trace-cmd record -e sched ./program_executable
+# USING A ADDITIONAL TRACER
+$ trace-cmd -t function ./program_executable
 ```
 
 * output erklörung
