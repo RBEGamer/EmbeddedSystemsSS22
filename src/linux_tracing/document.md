@@ -27,13 +27,15 @@ Die Linux-Tracing Funktionalität und die bestehenden Tools, welche im Linux-Ker
 $ sudo mount -t debugfs debugfs /sys/kernel/debug
 ```
 
-## Trace Events
+## Tracing
 
 
 Durch das Debug-Filesystem ist jetzt der Zugriff auf die Debug und insbesondere auf die Tracing-Daten möglich.
 Im Debug-Filesystem ist nach aktivierung der `tracing`-Ordner vorhanden.
-In diesem werden die verfügbaren Events in Gruppen (Ordnern) dargestellt, auf welche im späteren Verlauf reagiert werden können.
-Zudem werden auch die `tracers`
+In diesem werden die verfügbaren Events in Gruppen (Ordnern) dargestellt, auf welche im späteren Verlauf reagiert werden können. Zudem können hier auch die Verfügbaren `tracer` angezeigt und aktiviert werden, welche noch mehr debugging Optionen bereitstellen.
+
+
+### Tracer
 
 ```bash
 # GET TRACERS
@@ -46,16 +48,15 @@ $ echo nop > /sys/kernel/debug/tracing/current_tracer
 ```
 
 `tracer` sind zusätzliche Tracing-Tools, welche eine gezieltere Aggregierung von Events z.B. Filterung und somit tiefergehende Analyse erlauben.
-Zum Beispiel erlaubt der `ftrace`-Tracer eine detaillierte Ereignis-Filterung.
-Der `function_graph`-Tracer gibt bei Verwendung zusätzliche Informationen, wie z.B. die Laufzeit von einzelnen Funktionen.
-Auch kann dieser den Stacktrace und den Call-Stack übersichtlich darstellen, indem hier die Namen der aufgerufenen Funktionen ausgegeben werden.
+Zum Beispiel erlaubt der `ftrace`-Tracer eine detaillierte Ereignis-Filterung auf spezifizierte Events[@ftraceintroducation].
+Der `function_graph`-Tracer gibt bei Verwendung zusätzliche Informationen, wie z.B. die Laufzeit von einzelnen Funktionen[@fgtrace].
+Auch kann dieser den Stacktrace und den Call-Stack übersichtlich darstellen, indem hier die Namen der aufgerufenen Funktionen ausgegeben werden. 
 
 ```bash
 # CALL STACK USING FUNCTION_GRAPH TRACER
 $ echo function_graph > /sys/kernel/debug/tracing/current_tracer
 $ cat /sys/kernel/debug/tracing/trace
 # tracer: function_graph
-#
 # CPU-  DURATION          FUNCTION CALLS
 # |     |   |            |  |   |
  0)               |      getname() {
@@ -65,8 +66,9 @@ $ cat /sys/kernel/debug/tracing/trace
  [...]
 ```
 
+### Events
 
-In der `ls` Ausgabe des `events`-Ordners des Debug-Filesystems ist zu sehen, welche Events abgefangen werden können und mittels der Linux-Tracing-Tools protokoliert werden können.
+In der `ls`-Ausgabe des `events`-Ordners des Debug-Filesystems ist zu sehen, welche Events abgefangen und mittels der Linux-Tracing-Tools protokoliert werden können.
 
 ```bash
 # GET AVAILABLE EVENT LIST
@@ -146,7 +148,7 @@ format:
 
 ## Abfangen von Events
 
-Um ein Event abfangen zu können, muss dies zuerst für die gewünschten Events aktiviert werden.
+Um ein `event`[@events] abfangen zu können, muss dies zuerst für die gewünschten Events aktiviert werden.
 Hierzu werden die Event-Interface-Dateien verwendet, welche sich in jeder Event-Gruppe befinden.
 Die einfachste Methode ist es, eine `1` oder `0` in die `enable`-Datei der Gruppe zu schreiben.
 Ein spezifisches Event kann mit der gleiche Methode aktiviert werden. Hierzu wirde die `enable`-Datei im eigentlichen Event-Ordner verwendet anstatt jene, welche ich in de Event-Gruppe befindet.
@@ -167,17 +169,20 @@ Nach dem Aktivieren der Events, können
 
 
 
+## Probes
 
+* was sind probes
 ### kprobes
 
-`kprobes` können dazu verwendet werden, Laufzeit und Performance-Daten des Kernels zu sammeln.
+`kprobes`[@kprobes] können dazu verwendet werden, Laufzeit und Performance-Daten des Kernels zu sammeln.
 Der Vorteil and diesen ist, dass diese Daten ohne Unterbrechnung der Ausführung auf CPU-Instruktions-Ebene aggregiert werden können, anders wie bei dem Debuggen eines Programms mittels Breakpoints.
 Ein weiterer Vorteil ist, dass das Registrieren der Kprobes dynamisch zur Laufzeit und ohne Änderungen des Programmcodes geschieht.
+Somit ist es möglich zu verschiedenen Laufzeiten des zu analysierenden Systems oder Programms, Daten zu verschiedenen Laufzeiten gezielt sammen zu können.
 
-### kretprobes
+#### kretprobes
 
+`kretprobes`[@kprobes]
 
-### CPU-Traps
 
 ### uprobes
 
@@ -240,7 +245,7 @@ $ mkdir inst1
 
 ### trace-cmd
 
-Das Tool `trace-cmd` ist das bekannteste und am meisten genutzte Hilfmittel zur Aufzeichnung. Dies ist ein kommandozeilenwerkzeug, das auf den meisten gängingen Linux Distrubitionen bereits vorinstalliert ist.
+Das Tool `trace-cmd`[@trace-cmd] ist das bekannteste und am meisten genutzte Hilfmittel zur Aufzeichnung. Dies ist ein kommandozeilenwerkzeug, das auf den meisten gängingen Linux Distrubitionen bereits vorinstalliert ist.
 
 ```bash
 # CHECK IF TRACING IS ENABLED
@@ -263,7 +268,7 @@ $ trace-cmd -t function ./program_executable
 Mit dem letzten Befehl werden die ganzen Events zu Scheduler aufgezeichnet. Dabei werden während der Aufzeichnung kontinuierlich die Ringbuffer in konsumierender Form ausgelesen und in die Datei `trace.dat` geschrieben, falls mit dem `-o` keine eigene Datei eingegeben wurde. Als Informationen werden zu dem Inhalt des Ringbuffers auch zusätzlich notwendige Informationen über das Target, für die Auswertung auf beliebigen System gespeichert.
 
 Die `trace-cmd` Konsolenanwendung dient nicht nur zur Aufzeichnung der Trace-Events, sondern bietet auch die Möglichkeit augezeichnetet Reports visuell darzustellen.
-Die Ausgabe erfolgt mit dem Befehl `trace-cmd report [-i <Dateiname>]` als Tabelle in der Konsole und ist somit rein Textbasiert \ref{trace-cmd-report}.
+Die Ausgabe erfolgt mit dem Befehl `trace-cmd report [-i <Dateiname>]` als Tabelle in der Konsole und ist somit rein Textbasiert\ref{trace-cmd-report}.
 
 ![trace-cmd Report \label{trace-cmd-report}](images/trace-cmd.png)
 
@@ -273,7 +278,7 @@ Mit dem Tool ist es einfach die Teilschritte zu automatisieren.
 
 ### bpftrace
 
-Seit der Kernelversion `>4.x`, kann ein weiteres Tool mit dem Namen `bpftrace` verwendet werden.
+Seit der Kernelversion `>4.x`, kann ein weiteres Tool mit dem Namen `bpftrace`[@bpftrace] verwendet werden.
 Dieses bietet jedoch zusätzlich eine eigene Skripsprache mit der nicht nur Aggreation, sondern auch die Eventfilter und die Verarbeitung der Ergebnisse automatisiert werden können.
 
 ```bash
@@ -300,7 +305,9 @@ Auch dieses Tool ist in den meisten Linux Distributionen vorinstalliert.
 Das vom trace-cmd erzeugte `trace.dat-Format` wird im Kernelshark als Eingabe erwartet. Wenn im folgendem ersten Befehl nichts eingegeben, dann wird nach der entsprechenden `trace.dat` im Verzeichnis gesucht.
 
 ```bash
+# OPEN KERNELSHARK WITH trace.dat
 $ kernelshark
+# OPEN KERNELSHAR WITH SPECIFIED TRACELOG
 $ kernelshark -i <Dateiname>
 ```
 
@@ -317,7 +324,7 @@ Dieses Beispiel soll zeigen, wie der Empfang von TCP-Netzwerkpaketen auf Paketve
 Hierbei soll analysiert werden, wie das System auf eine unerwartet große Menge an TCP-Paketen reagiert.
 
 ## bpftrace Installation
-Hierbei wird auf dem zu analysierenden System `bpftrace` verwendet. Unter Debian-Systemen kann dies einfach über den APT-Package-Manager installiert werden. Jedoch ist diese Version welche in der Registry hinterlegt ist meist nicht aktuell.
+Hierbei wird auf dem zu analysierenden System `bpftrace`[@bpftrace] verwendet. Unter Debian-Systemen kann dies einfach über den APT-Package-Manager installiert werden. Jedoch ist diese Version welche in der Registry hinterlegt ist meist nicht aktuell.
 Das folgende Beispiel erfodert die Version `>= 0.14`.
 Somit muss `bpftrace` aus den Quellen gebaut werden, da in der APT-Registry nur die Version `~0.11` zur Verfügung stand.
 
@@ -354,7 +361,7 @@ kprobe:tcp_drop
 }
 ```
 
-Um eine Lastspitze auf dem System zu erzeugen wurde das Netzwerkbenchmark-Tool `ntttcp` verwendet. Mit diesem ist es möglich UDP und TCP Pakete mit verschiedenen Paketgrößen zu generieren.
+Um eine Lastspitze auf dem System zu erzeugen wurde das Netzwerkbenchmark-Tool `ntttcp`[@ntttcp] verwendet. Mit diesem ist es möglich UDP und TCP Pakete mit verschiedenen Paketgrößen zu generieren.
 Hierzu werden zwei Instanzen benötigt, der Server und der Client, welche auf dem gleichen System aber auch auf verschiedenen Systemen ausgeführt werden können.
 
 ## Aufzeichnung Trace-Log
@@ -377,7 +384,7 @@ $ sudo bpftrace -o ~/tcpdrop_log -f text -v ~/tcpdrop.bt
 INFO: node count: 171
 Program ID: 146
 The verifier log: 
-processed 374 insns (limit 1000000) max_states_per_insn 0 total_states 7 peak_states 7 mark_read 1
+processed 374 insns (limit 1000000) max_states_per_insn 0
 Attaching BEGIN
 [...]
 
@@ -385,7 +392,7 @@ Attaching BEGIN
 $ ntttcp -s10.11.12.1 -t -l 4096K
 NTTTCP for Linux 1.4.0
 ---------------------------------------------------------
-21:28:52 INFO: running test in continuous mode. please monitor throughput by other tools
+21:28:52 INFO: running test in continuous mode.
 21:28:52 INFO: 64 threads created
 21:28:52 INFO: 64 connections created in 5656 microseconds
 21:28:52 INFO: Network activity progressing...
@@ -404,7 +411,7 @@ Danach folgt der Kernel-Stacktrace, in welchem der Funktionsaufruf-Verlauf bis z
 $ cat ~/tcpdrop_log
 [..]
 # tcp_drop() TIME   PID  APPLICATION    SOURCE  DESTINATION
-21:36:57 18157    ntttcp       10.11.12.1:5014     10.11.12.2:59012
+21:36:57 18157 ntttcp 10.11.12.1:5014 10.11.12.2:59012
         #CALLSTACK
         # LAST FUNCTION CALL
         tcp_drop+1
@@ -483,27 +490,27 @@ Da zur Ansteuerung des GPIO Ports die `pigpio` Bibliothek verwendet wurde, welch
 
 ```bash
 # INSTALL PIGPIO LIB
-$ git clone https://github.com/joan2937/pigpio.git ./pigpio
-$ cd pigpio && make && sudo make install && cd ~
+$ git clone https://github.com/joan2937/pigpio.git ~/pigpio
+$ cd ~/pigpio && make && sudo make install && cd ~
 # COMPILE
 $ g++ -Wall -pthread -o gpio_test gpio_test.cpp -lpigpio -lrt
 # TEST
-$ ./gpio_test
+$ sudo ./gpio_test
 ```
 
 
 ## Kernel des Testsystems
 
 
+
 Für den Test wurde als RT Kernel die Version `4.19.59-rt23-v7l+` verwendet, welche nicht alle Funktionaltitäten des aktuellen `5.10` Kernel besitzt.
-In diesem fiktiven Beispiel, wird die `systemd-networking >V.248` Funktionalität für das Batman-Prokoll benötigt, welche den Grund für die Umstellung darstellt und nicht trivial in den `4.x` Kernel integriert werden kann. Die Messungen wurden zuerst auf dem aktuellen `5.10 LTS` Kernel aufgezeichnet und im Anschluss wurde der RT-Kernel auf einem anderen System per Cross-Compilation aus dem `rpi-4.19.y-rt` Branch des `raspberrypi/linux` Repository gebaut.
-Dieser Schritt war notwendig, da es kein fertiges RT-Kernel Image zur Verfügung stand.
-Die erzeugten Dateien wurden dann auf die Boot-Partition der SD Karte geschrieben und in der `/boot/config.txt` Datei wurde der neue Kernel hinterlegt `kernel=kernel7_rt.img`.
+In diesem fiktiven Beispiel, wird die `systemd-networking >V.248` Funktionalität für das Batman-Protokoll benötigt, welche den Grund für die Umstellung darstellt und nicht trivial in den `4.x` Kernel integriert werden kann. Die Messungen wurden zuerst auf dem aktuellen `5.10 LTS` Kernel aufgezeichnet und im Anschluss wurde der RT-Kernel auf einem anderen System per Cross-Compilation[@rpi4rt] aus dem `rpi-4.19.y-rt` Branch des `raspberrypi/linux` Repository gebaut. Dieser Schritt war notwendig, da es kein fertiges RT-Kernel Image zur Verfügung stand.
+Die erzeugten Dateien wurden dann auf die Boot-Partition der SD Karte geschrieben und in der `/boot/config.txt` Datei wurde der neue Kernel installiert `kernel=kernel7_rt.img`.
 
 
 ## Aufzeichnung Trace-Log
 
-Zur Aufzeichnung des Trace-Logs wurde `trace-cmd` verwendet. Auf dem Zielsystem wurde dabei nur die Aufzeichnung vorgenommen und die Analyse der Logs erfolgte auf einem seperaten System.
+Zur Aufzeichnung des Trace-Logs wurde `trace-cmd`[@trace-cmd] verwendet. Auf dem Zielsystem wurde dabei nur die Aufzeichnung vorgenommen und die Analyse der Logs erfolgte auf einem seperaten System.
 Für den Test wird zuerst die `tracing`-Funktionalität aktiviert und alle `sched` und `gpio`-Events aktiviert.
 
 ```bash

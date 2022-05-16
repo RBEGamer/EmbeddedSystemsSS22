@@ -40,7 +40,7 @@ pandoc --version
 
 pandoc ./document.md -o ./document.tex --from markdown --biblatex --template ./pandoc_template.tex --listings --top-level-division=chapter --lua-filter ./pandoc-gls.lua
 # NOW THE HACKY PART WE WANT TO USE THE STANDART cite command instead the from pandoc used cite to we use sed to hard replace the stuff
-sed -i 's/\\autocite{/\\cite{/g' ./document.tex
+sed -i .bak 's/\\autocite{/\\cite{/g' ./document.tex
 # python3 ./fix-table-color-bleed.py ./_document.tex > ./document.tex
 
 pandoc ./declaration.md -o ./declaration.tex --from markdown --top-level-division=chapter --listings

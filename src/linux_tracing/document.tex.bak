@@ -79,10 +79,10 @@ eine gezieltere Aggregierung von Events z.B. Filterung und somit
 tiefergehende Analyse erlauben. Zum Beispiel erlaubt der
 \passthrough{\lstinline!ftrace!}-Tracer eine detaillierte
 Ereignis-Filterung auf spezifizierte
-Events\cite{ftraceintroducation}. Der
+Events\autocite{ftraceintroducation}. Der
 \passthrough{\lstinline!function\_graph!}-Tracer gibt bei Verwendung
 zusätzliche Informationen, wie z.B. die Laufzeit von einzelnen
-Funktionen\cite{fgtrace}. Auch kann dieser den Stacktrace und den
+Funktionen\autocite{fgtrace}. Auch kann dieser den Stacktrace und den
 Call-Stack übersichtlich darstellen, indem hier die Namen der
 aufgerufenen Funktionen ausgegeben werden.
 
@@ -192,7 +192,7 @@ format:
 \hypertarget{abfangen-von-events}{%
 \section{Abfangen von Events}\label{abfangen-von-events}}
 
-Um ein \passthrough{\lstinline!event!}\cite{events} abfangen zu
+Um ein \passthrough{\lstinline!event!}\autocite{events} abfangen zu
 können, muss dies zuerst für die gewünschten Events aktiviert werden.
 Hierzu werden die Event-Interface-Dateien verwendet, welche sich in
 jeder Event-Gruppe befinden. Die einfachste Methode ist es, eine
@@ -225,7 +225,7 @@ Nach dem Aktivieren der Events, können
   was sind probes \#\#\# kprobes
 \end{itemize}
 
-\passthrough{\lstinline!kprobes!}\cite{kprobes} können dazu
+\passthrough{\lstinline!kprobes!}\autocite{kprobes} können dazu
 verwendet werden, Laufzeit und Performance-Daten des Kernels zu sammeln.
 Der Vorteil and diesen ist, dass diese Daten ohne Unterbrechnung der
 Ausführung auf CPU-Instruktions-Ebene aggregiert werden können, anders
@@ -238,7 +238,7 @@ Daten zu verschiedenen Laufzeiten gezielt sammen zu können.
 \hypertarget{kretprobes}{%
 \subsubsection{kretprobes}\label{kretprobes}}
 
-\passthrough{\lstinline!kretprobes!}\cite{kprobes}
+\passthrough{\lstinline!kretprobes!}\autocite{kprobes}
 
 \hypertarget{uprobes}{%
 \subsection{uprobes}\label{uprobes}}
@@ -339,7 +339,7 @@ $ mkdir inst1
 \hypertarget{trace-cmd}{%
 \subsection{trace-cmd}\label{trace-cmd}}
 
-Das Tool \passthrough{\lstinline!trace-cmd!}\cite{trace-cmd} ist das
+Das Tool \passthrough{\lstinline!trace-cmd!}\autocite{trace-cmd} ist das
 bekannteste und am meisten genutzte Hilfmittel zur Aufzeichnung. Dies
 ist ein kommandozeilenwerkzeug, das auf den meisten gängingen Linux
 Distrubitionen bereits vorinstalliert ist.
@@ -397,7 +397,7 @@ Mit dem Tool ist es einfach die Teilschritte zu automatisieren.
 \subsection{bpftrace}\label{bpftrace}}
 
 Seit der Kernelversion \passthrough{\lstinline!>4.x!}, kann ein weiteres
-Tool mit dem Namen \passthrough{\lstinline!bpftrace!}\cite{bpftrace}
+Tool mit dem Namen \passthrough{\lstinline!bpftrace!}\autocite{bpftrace}
 verwendet werden. Dieses bietet jedoch zusätzlich eine eigene
 Skripsprache mit der nicht nur Aggreation, sondern auch die Eventfilter
 und die Verarbeitung der Ergebnisse automatisiert werden können.
@@ -462,7 +462,7 @@ TCP-Paketen reagiert.
 \section{bpftrace Installation}\label{bpftrace-installation}}
 
 Hierbei wird auf dem zu analysierenden System
-\passthrough{\lstinline!bpftrace!}\cite{bpftrace} verwendet. Unter
+\passthrough{\lstinline!bpftrace!}\autocite{bpftrace} verwendet. Unter
 Debian-Systemen kann dies einfach über den APT-Package-Manager
 installiert werden. Jedoch ist diese Version welche in der Registry
 hinterlegt ist meist nicht aktuell. Das folgende Beispiel erfodert die
@@ -510,7 +510,7 @@ kprobe:tcp_drop
 \end{lstlisting}
 
 Um eine Lastspitze auf dem System zu erzeugen wurde das
-Netzwerkbenchmark-Tool \passthrough{\lstinline!ntttcp!}\cite{ntttcp}
+Netzwerkbenchmark-Tool \passthrough{\lstinline!ntttcp!}\autocite{ntttcp}
 verwendet. Mit diesem ist es möglich UDP und TCP Pakete mit
 verschiedenen Paketgrößen zu generieren. Hierzu werden zwei Instanzen
 benötigt, der Server und der Client, welche auf dem gleichen System aber
@@ -702,7 +702,7 @@ darstellt und nicht trivial in den \passthrough{\lstinline!4.x!} Kernel
 integriert werden kann. Die Messungen wurden zuerst auf dem aktuellen
 \passthrough{\lstinline!5.10 LTS!} Kernel aufgezeichnet und im Anschluss
 wurde der RT-Kernel auf einem anderen System per
-Cross-Compilation\cite{rpi4rt} aus dem
+Cross-Compilation\autocite{rpi4rt} aus dem
 \passthrough{\lstinline!rpi-4.19.y-rt!} Branch des
 \passthrough{\lstinline!raspberrypi/linux!} Repository gebaut. Dieser
 Schritt war notwendig, da es kein fertiges RT-Kernel Image zur Verfügung
@@ -715,7 +715,7 @@ Datei wurde der neue Kernel installiert
 \section{Aufzeichnung Trace-Log}\label{aufzeichnung-trace-log-1}}
 
 Zur Aufzeichnung des Trace-Logs wurde
-\passthrough{\lstinline!trace-cmd!}\cite{trace-cmd} verwendet. Auf
+\passthrough{\lstinline!trace-cmd!}\autocite{trace-cmd} verwendet. Auf
 dem Zielsystem wurde dabei nur die Aufzeichnung vorgenommen und die
 Analyse der Logs erfolgte auf einem seperaten System. Für den Test wird
 zuerst die \passthrough{\lstinline!tracing!}-Funktionalität aktiviert
