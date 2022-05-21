@@ -18,6 +18,8 @@ Die Linux-Tracing Funktionalität und die bestehenden Tools, welche im Linux-Ker
 
 ## Ringbuffer
 
+Bei einem Ringbuffer handelt sich um eine Datenstruktur, die es READER und WRITER erleichtert, Informationen asynchron auszutauschen. Der Puffer wird in der Regel als Array mit zwei Zeigern implementiert. Einem Lesezeiger und einem Schreibzeiger. Man liest aus dem Puffer, indem man den Inhalt des Lesezeigers liest und dann den Zeiger auf das nächste Element erhöht, und ebenso beim Schreiben in den Puffer mit dem Schreibzeiger.
+
 ## Debug-Filesystem
 
 * möglichkeiten
