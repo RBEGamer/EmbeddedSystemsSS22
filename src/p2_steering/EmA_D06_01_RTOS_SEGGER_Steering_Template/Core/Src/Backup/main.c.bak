@@ -41,8 +41,6 @@
 TaskHandle_t task1_Control_handle;
 TaskHandle_t task2_MEMS_handle;
 TaskHandle_t task3_LED_handle;
-
-QueueHandle_t xQueue_led;
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -51,23 +49,15 @@ QueueHandle_t xQueue_led;
 #define STATUS_GAME_WAIT_FOR_START		1
 #define STATUS_RANDOM_TIMER_RUNNING		2
 #define STATUS_RANDOM_TIMER_EXPIRED		3
-#define STATUS_MEASUREMENT_RUNNING	 	4
+#define STATUS_MEASURE_REACTION_TIME 	4
 #define STATUS_MEASUREMENT_DONE 		5
 #define STATUS_INVALID_MEASUREMENT		6
 
 
-#define DIRECTION_UP 	1
-#define DIRECTION_DOWN 	2
-#define DIRECTION_LEFT 	3
-#define DIRECTION_RIGHT	4
-
-#define LED_OFF 0
-#define LED_3 1
-#define LED_4 2
-#define LED_5 3
-#define LED_6 4
-#define LED_7 5
-#define LED_8 6
+#define DIRECTION_UP 	0
+#define DIRECTION_DOWN 	1
+#define DIRECTION_LEFT 	2
+#define DIRECTION_RIGHT	3
 
 #define MAX_RND_VALUE 40000
 #define MIN_RND_VALUE 10000
@@ -111,14 +101,7 @@ void start_random_timer(){
 	HAL_TIM_Base_Init(&htim7);
 }
 
-uint32_t get_random_direction(){
-	//GET RANDOM NUMBER
-	uint32_t rng = 0;
-	HAL_RNG_GenerateRandomNumber(&hrng, &rng);
-	//MAP 0-65536 => 1-4
-	rng =  (((uint16_t)rng) % 4)+1; //RND VALUE = LED INDEX SO +1
-	return rng;
-}
+
 
 
 void task2_MEMS_Handler(void* parameters){
@@ -127,19 +110,10 @@ void task2_MEMS_Handler(void* parameters){
 	}
 }
 
-
-
-void send_led_set_message(uint32_t _led){
-	if(uxQueueSpacesAvailable(xQueue_led) > 0){
-		xQueueSendToBack( xQueue_led,&_led,( TickType_t ) 10 );
-	}
-}
 void task1_Control_Handler(void* parameters){
 	//char msg[64];
 	//uint32_t value = 0;
 	uint32_t event_val = 0;
-	uint8_t c= 0;
-	uint32_t direction = 0;
 	while (1){
 
 
@@ -148,25 +122,19 @@ void task1_Control_Handler(void* parameters){
 			//STOP TIMERS
 			HAL_TIM_Base_Stop_IT(&htim7);
 			//HAL_TIM_Base_Stop_IT(&htim8);
-			//RESET LED
-			send_led_set_message(LED_OFF);
+			//SET LED SIGNAL
 			//SET RANDOM DIRECTION
-			direction = get_random_direction();
-			//SET NEW STATUS
 			status = STATUS_GAME_WAIT_FOR_START;
 		}else if(status == STATUS_GAME_WAIT_FOR_START){
 			//WAIT FOR BUTTON NOTIFY EVENT
-			if(xTaskNotifyWait(0,0, &event_val, portMAX_DELAY) == pdTRUE && event_val == 1){
-				send_led_set_message(LED_7);
+			if(xTaskNotifyWait(0,0, &event_val, portMAX_DELAY) == pdTRUE){
+				HAL_GPIO_WritePin(LD7_GPIO_Port, LD7_Pin, 0);
 				//BLINK GREEN LED
-				for(c = 0; c < 4; c++){
-					send_led_set_message(LED_OFF);
-					vTaskDelay( 2000/portTICK_PERIOD_MS );
-					send_led_set_message(LED_7);
-					vTaskDelay( 2000/portTICK_PERIOD_MS );
-
+				for(int i = 0; i < 4; i++){
+				HAL_GPIO_TogglePin(LD7_GPIO_Port, LD7_Pin);
+				vTaskDelay( 500/portTICK_PERIOD_MS );
 				}
-				send_led_set_message(LED_OFF);
+				HAL_GPIO_WritePin(LD7_GPIO_Port, LD7_Pin, 0);
 
 				//SET AND START RANDOM TIMER
 				start_random_timer();
@@ -175,20 +143,11 @@ void task1_Control_Handler(void* parameters){
 
 		}else if(status == STATUS_RANDOM_TIMER_RUNNING){
 			//WAIT FOR NOTIFY
-			if(xTaskNotifyWait(0,0, &event_val, portMAX_DELAY) == pdTRUE && event_val == 2){
+			if(xTaskNotifyWait(0,0, &event_val, portMAX_DELAY) == pdTRUE){
 				//STOP RANDOM TIMER
 				HAL_TIM_Base_Stop_IT(&htim7);
-				//SET NEW STATE
-				status = STATUS_RANDOM_TIMER_EXPIRED;
 			}
 
-		}else if(status == STATUS_RANDOM_TIMER_EXPIRED){
-
-			//SWITCH DIRECTION LED ON
-			send_led_set_message(direction);
-			//START NEW TIMER
-
-			status = STATUS_MEASUREMENT_RUNNING;
 		}
 
 
@@ -198,35 +157,8 @@ void task1_Control_Handler(void* parameters){
 	}
 }
 
-
-void set_leds_off(){
-	HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, 0);
-	HAL_GPIO_WritePin(LD4_GPIO_Port, LD4_Pin, 0);
-	HAL_GPIO_WritePin(LD5_GPIO_Port, LD5_Pin, 0);
-	HAL_GPIO_WritePin(LD6_GPIO_Port, LD6_Pin, 0);
-	HAL_GPIO_WritePin(LD7_GPIO_Port, LD7_Pin, 0);
-	HAL_GPIO_WritePin(LD8_GPIO_Port, LD8_Pin, 0);
-}
-
 void task3_LED_Handler(void* parameters){
-	uint32_t led_value = 0;
-	uint32_t last = 99;
 	while (1){
-
-		if(xQueueReceive( xQueue_led,( void * ) &led_value,( TickType_t ) 10 ) == pdTRUE && led_value != last){
-			last = led_value;
-			//SWITCH LEDS OFF
-			set_leds_off();
-			//SET TO NEW VALUE
-			switch(led_value){
-			case LED_3: HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, 1);
-			case LED_4: HAL_GPIO_WritePin(LD4_GPIO_Port, LD4_Pin, 1);
-			case LED_5: HAL_GPIO_WritePin(LD5_GPIO_Port, LD5_Pin, 1);
-			case LED_6: HAL_GPIO_WritePin(LD6_GPIO_Port, LD6_Pin, 1);
-			case LED_7: HAL_GPIO_WritePin(LD7_GPIO_Port, LD7_Pin, 1);
-			case LED_8: HAL_GPIO_WritePin(LD8_GPIO_Port, LD8_Pin, 1);
-			}
-		}
 		vTaskDelay(10);
 	}
 }
@@ -241,7 +173,6 @@ int main(void)
   /* USER CODE BEGIN 1 */
 
 	BaseType_t status;
-
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -250,7 +181,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-  xQueue_led = xQueueCreate( 1, sizeof( uint32_t ) );
+
   /* USER CODE END Init */
 
   /* Configure the system clock */
