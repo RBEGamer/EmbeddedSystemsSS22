@@ -36,6 +36,14 @@ Nebenläufigkeiten und der Untersuchung von Latenzproblemen,
 \hypertarget{ringbuffer}{%
 \section{Ringbuffer}\label{ringbuffer}}
 
+Bei einem Ringbuffer handelt sich um eine Datenstruktur, die es READER
+und WRITER erleichtert, Informationen asynchron auszutauschen. Der
+Puffer wird in der Regel als Array mit zwei Zeigern implementiert. Einem
+Lesezeiger und einem Schreibzeiger. Man liest aus dem Puffer, indem man
+den Inhalt des Lesezeigers liest und dann den Zeiger auf das nächste
+Element erhöht, und ebenso beim Schreiben in den Puffer mit dem
+Schreibzeiger.
+
 \hypertarget{debug-filesystem}{%
 \section{Debug-Filesystem}\label{debug-filesystem}}
 
@@ -242,6 +250,56 @@ Daten zu verschiedenen Laufzeiten gezielt sammen zu können.
 
 \hypertarget{uprobes}{%
 \subsection{uprobes}\label{uprobes}}
+
+Eine Weiterentwicklung zu den kprobes sind die uprobes. Mit diesem
+können zur Laufzeit Events in eine Applikation eingebunden werden.
+
+Wenn ein uprobes hinzugefügt werden soll, muss davor noch was gemacht
+werden. Bei der Nutzung von kprobes kann ein einfacher Symbolnamen
+spezifiziert werden. Aufgrund das alle Applikationen ihren eigenen
+virtuellen Adressraum besitzen, haben diese auch einen anderen
+Adressbasis. Beim Erzeugen eines uprobes wird das Adressoffset im
+Textsegment der jeweiligen Applikation benötigt.
+
+\begin{lstlisting}[language={C++}]
+// hello.c
+#include <stdio.h>
+
+int main(void)
+{
+    int i;
+
+    for (i = 0; i < 5; i++)
+        printf("Hello uprobe\n");
+
+    return 0;
+}
+\end{lstlisting}
+
+\begin{lstlisting}[language=bash]
+# CREATE EXECUTE OBJECT
+$ /root/gcc hello.c -o hello
+
+# GET OFFSET
+$ objdump -F -S -D hello | less
+
+# CREATE A uprobe_event
+$ echo "p:my_uprobe /path_to_application/hello:<0xOffset>" > uprobe_events
+
+# ACTIVATE UPROBE EVENTS
+$ echo 1 > /sys/kernel/tracing/events/uprobes/my_uprobe/enable
+
+# EXECUTE
+$ /root/hello
+# Hello uprobe
+# Hello uprobe
+# Hello uprobe
+# Hello urpobe
+# Hello uprobe
+
+# PRINT TRACED EVENTS
+$ cat /sys/kernel/debug/tracing/trace
+\end{lstlisting}
 
 \begin{itemize}
 \tightlist
@@ -458,6 +516,17 @@ Paketverlust auf einem System überprüft werden kann. Hierbei soll
 analysiert werden, wie das System auf eine unerwartet große Menge an
 TCP-Paketen reagiert.
 
+\hypertarget{ausgangsszenario}{%
+\section{Ausgangsszenario}\label{ausgangsszenario}}
+
+\begin{itemize}
+\tightlist
+\item
+  iot anwendungen
+\item
+  viele kleine pakete
+\end{itemize}
+
 \hypertarget{bpftrace-installation}{%
 \section{bpftrace Installation}\label{bpftrace-installation}}
 
@@ -551,8 +620,8 @@ processed 374 insns (limit 1000000) max_states_per_insn 0
 Attaching BEGIN
 [...]
 
-# START CLIENT # PACKET SIZE 4096K
-$ ntttcp -s10.11.12.1 -t -l 4096K
+# START CLIENT # PACKET SIZE 16Byte
+$ ntttcp -s10.11.12.1 -t -l 16
 NTTTCP for Linux 1.4.0
 ---------------------------------------------------------
 21:28:52 INFO: running test in continuous mode.
@@ -590,16 +659,19 @@ $ cat ~/tcpdrop_log
         #CALLSTACK
         # LAST FUNCTION CALL
         tcp_drop+1
-        tcp_rcv_established+562
-        tcp_v4_do_rcv+328
-        tcp_v4_rcv+3325
-        ip_protocol_deliver_rcu+48
-        ip_local_deliver_finish+72
-        ip_local_deliver+250
-        ip_rcv_finish+182
-        ip_rcv+204
-        [...]
-        do_syscall_64+97
+        tcp_v4_do_rcv+196
+        __release_sock+120
+        __tcp_close+444
+        tcp_close+37
+        inet_release+72
+        __sock_release+66
+        sock_close+21
+        __fput+156
+        ____fput+14
+        task_work_run+112
+        exit_to_user_mode_prepare+437
+        syscall_exit_to_user_mode+39
+        do_syscall_64+110
         entry_SYSCALL_64_after_hwframe+68
         # FIRST FUNCTION CALL
 [...]
@@ -621,8 +693,8 @@ In diesem Abschnitt soll an einem einfache Beispiel gezeigt werden, wie
 es mittels Tracing möglich ist, eine Laufzeitanalyse auf verschiedenen
 Systemen für eine Anwendung durchzuführen.
 
-\hypertarget{ausgangsszenario}{%
-\section{Ausgangsszenario}\label{ausgangsszenario}}
+\hypertarget{ausgangsszenario-1}{%
+\section{Ausgangsszenario}\label{ausgangsszenario-1}}
 
 Als Ausgangspunkt dieses Beispiels, soll das Laufzeitverhalten eines
 Programms auf einem Linux-System analysiert werden. Die zugrunde

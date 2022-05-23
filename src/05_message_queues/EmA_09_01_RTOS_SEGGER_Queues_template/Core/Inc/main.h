@@ -32,7 +32,10 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <math.h>
+#include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
+#include "LCD_I2C_Driver.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -42,9 +45,7 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
-extern TaskHandle_t control_task_handle;
-extern TaskHandle_t readout_task_handle;
-extern TaskHandle_t led_task_handle;
+extern const char msg_control[12][32];
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/
@@ -56,8 +57,19 @@ extern TaskHandle_t led_task_handle;
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
+extern LCD_Handle_t lcd_handle;
+extern ADC_HandleTypeDef hadc1;
 
-
+extern TaskHandle_t measure_task_handle;
+extern TaskHandle_t process_task_handle;
+extern TaskHandle_t print_task_handle;
+extern TaskHandle_t control_task_handle;
+extern QueueHandle_t xQueue1;
+extern QueueHandle_t xQueue_print;
+void measure_task_Handler(void* parameters);
+void process_task_Handler(void* parameters);
+void print_task_Handler(void* parameters);
+void control_task_Handler(void* parameters);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
@@ -100,8 +112,8 @@ void Error_Handler(void);
 #define LD6_GPIO_Port GPIOD
 #define I2S3_MCK_Pin GPIO_PIN_7
 #define I2S3_MCK_GPIO_Port GPIOC
-#define LD7_Pin GPIO_PIN_9
-#define LD7_GPIO_Port GPIOA
+#define VBUS_FS_Pin GPIO_PIN_9
+#define VBUS_FS_GPIO_Port GPIOA
 #define OTG_FS_ID_Pin GPIO_PIN_10
 #define OTG_FS_ID_GPIO_Port GPIOA
 #define OTG_FS_DM_Pin GPIO_PIN_11
@@ -118,8 +130,8 @@ void Error_Handler(void);
 #define I2S3_SD_GPIO_Port GPIOC
 #define Audio_RST_Pin GPIO_PIN_4
 #define Audio_RST_GPIO_Port GPIOD
-#define LD8_Pin GPIO_PIN_5
-#define LD8_GPIO_Port GPIOD
+#define OTG_FS_OverCurrent_Pin GPIO_PIN_5
+#define OTG_FS_OverCurrent_GPIO_Port GPIOD
 #define SWO_Pin GPIO_PIN_3
 #define SWO_GPIO_Port GPIOB
 #define Audio_SCL_Pin GPIO_PIN_6
@@ -137,5 +149,3 @@ void Error_Handler(void);
 #endif
 
 #endif /* __MAIN_H */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

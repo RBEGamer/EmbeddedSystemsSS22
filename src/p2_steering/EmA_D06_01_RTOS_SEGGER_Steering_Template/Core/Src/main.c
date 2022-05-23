@@ -49,7 +49,9 @@
 
 /* USER CODE BEGIN PV */
 #define DWT_CTRL	(*(volatile uint32_t*) 0xE0001000)
-TaskHandle_t task1_handle;
+TaskHandle_t control_task_handle;
+TaskHandle_t readout_task_handle;
+TaskHandle_t led_task_handle;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -105,7 +107,7 @@ int main(void)
 	SEGGER_SYSVIEW_Conf();
 	SEGGER_SYSVIEW_Start();
 
-	status = xTaskCreate(task1,"Task1",200, NULL, 1, &task1_handle);
+	status = xTaskCreate(task1,"Task1",200, NULL, 1, &control_task_handle);
 	configASSERT(status==pdPASS);
 
 	vTaskStartScheduler();
