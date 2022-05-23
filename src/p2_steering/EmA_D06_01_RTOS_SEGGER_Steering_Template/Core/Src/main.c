@@ -29,6 +29,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "stdio.h"
+#include "MEMS_sensor.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -43,6 +44,7 @@ TaskHandle_t task2_MEMS_handle;
 TaskHandle_t task3_LED_handle;
 
 QueueHandle_t xQueue_led;
+QueueHandle_t xQueue_reading;
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -55,23 +57,29 @@ QueueHandle_t xQueue_led;
 #define STATUS_MEASUREMENT_DONE 		5
 #define STATUS_INVALID_MEASUREMENT		6
 
-
-#define DIRECTION_UP 	1
-#define DIRECTION_DOWN 	2
-#define DIRECTION_LEFT 	3
-#define DIRECTION_RIGHT	4
-
 #define LED_OFF 0
-#define LED_3 1
-#define LED_4 2
-#define LED_5 3
-#define LED_6 4
-#define LED_7 5
-#define LED_8 6
+#define LED_3 	1
+#define LED_4 	2
+#define LED_5 	3
+#define LED_6 	4
+#define LED_7 	5
+#define LED_8 	6
+
+
+#define DIRECTION_INVALID 	LED_OFF
+#define DIRECTION_UP 		LED_3
+#define DIRECTION_DOWN 		LED_6
+#define DIRECTION_LEFT 		LED_4
+#define DIRECTION_RIGHT		LED_5
+
+
 
 #define MAX_RND_VALUE 40000
 #define MIN_RND_VALUE 10000
 
+const int16_t ThresholdHigh = 10000;
+const int16_t ThresholdLow = -10000;
+const uint32_t ThresholdGen = 10000;
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -79,7 +87,7 @@ QueueHandle_t xQueue_led;
 /* USER CODE BEGIN PV */
 #define DWT_CTRL	(*(volatile uint32_t*) 0xE0001000)
 
-uint8_t status = STATUS_GAME_INIT;
+uint8_t status = STATUS_RANDOM_TIMER_EXPIRED;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -121,9 +129,59 @@ uint32_t get_random_direction(){
 }
 
 
+uint32_t mems_to_direction(){
+	int16_t buffer[3] = {0};
+	int16_t xval, yval = 0x00;
+
+	  /* Read Acceleration */
+	read_mems(&buffer);
+
+	  xval = buffer[0];
+	  yval = buffer[2];
+
+	  if((abs(xval))> ThresholdGen)
+	  {
+	    if(xval > ThresholdHigh)
+	    {
+	    	return DIRECTION_RIGHT;
+	    }
+	    else if(xval < ThresholdLow)
+	    {
+	    	return DIRECTION_LEFT;
+	    }
+
+	  }
+
+	  if(abs(yval) > ThresholdGen)
+	  {
+	    if(yval < ThresholdLow)
+	    {
+	    	return DIRECTION_DOWN;
+	    }
+	    else if(yval > ThresholdHigh)
+	    {
+	    	return DIRECTION_UP;
+	    }
+
+	  }
+
+	  return DIRECTION_INVALID;
+}
+
 void task2_MEMS_Handler(void* parameters){
+
+	uint32_t read_direction = 0;
+
+
 	while (1){
-		vTaskDelay(2);
+		vTaskDelay(10);
+
+		//GET READING
+		read_direction = mems_to_direction();
+		//SEND IT
+		if(uxQueueSpacesAvailable(xQueue_reading) > 0){
+				xQueueSendToBack( xQueue_reading,&read_direction,( TickType_t ) 10 );
+		}
 	}
 }
 
@@ -138,6 +196,7 @@ void task1_Control_Handler(void* parameters){
 	//char msg[64];
 	//uint32_t value = 0;
 	uint32_t event_val = 0;
+	uint32_t event_val_last = 0;
 	uint8_t c= 0;
 	uint32_t direction = 0;
 	while (1){
@@ -150,8 +209,7 @@ void task1_Control_Handler(void* parameters){
 			//HAL_TIM_Base_Stop_IT(&htim8);
 			//RESET LED
 			send_led_set_message(LED_OFF);
-			//SET RANDOM DIRECTION
-			direction = get_random_direction();
+
 			//SET NEW STATUS
 			status = STATUS_GAME_WAIT_FOR_START;
 		}else if(status == STATUS_GAME_WAIT_FOR_START){
@@ -161,9 +219,9 @@ void task1_Control_Handler(void* parameters){
 				//BLINK GREEN LED
 				for(c = 0; c < 4; c++){
 					send_led_set_message(LED_OFF);
-					vTaskDelay( 2000/portTICK_PERIOD_MS );
+					vTaskDelay( 1000/portTICK_PERIOD_MS );
 					send_led_set_message(LED_7);
-					vTaskDelay( 2000/portTICK_PERIOD_MS );
+					vTaskDelay( 1000/portTICK_PERIOD_MS );
 
 				}
 				send_led_set_message(LED_OFF);
@@ -185,10 +243,40 @@ void task1_Control_Handler(void* parameters){
 		}else if(status == STATUS_RANDOM_TIMER_EXPIRED){
 
 			//SWITCH DIRECTION LED ON
+			direction = get_random_direction();
 			send_led_set_message(direction);
 			//START NEW TIMER
-
+			//SET STATE
 			status = STATUS_MEASUREMENT_RUNNING;
+
+
+		}else if(status == STATUS_MEASUREMENT_RUNNING){
+			//TIMER TIMEOUT
+			if(xTaskNotifyWait(0,0, &event_val, portMAX_DELAY) == pdTRUE && event_val == 2){
+				//STOP RANDOM TIMER
+				HAL_TIM_Base_Stop_IT(&htim7);
+				//SET NEW STATE
+				send_led_set_message(LED_8);
+				vTaskDelay( 2000/portTICK_PERIOD_MS );
+				status = STATUS_GAME_INIT;
+			}
+
+
+			//GET A VALID MOVEMENT RESULT
+			if(xQueueReceive( xQueue_reading,( void * ) &event_val,( TickType_t ) 10 ) == pdTRUE && event_val != event_val_last){
+				event_val_last = event_val;
+				//DISPLAY RESULT
+				if(event_val == direction){
+					send_led_set_message(LED_7);
+				}else{
+					send_led_set_message(LED_8);
+				}
+
+				//WAIT
+				vTaskDelay( 2000/portTICK_PERIOD_MS );
+				//RESET
+				status = STATUS_RANDOM_TIMER_EXPIRED;
+			}
 		}
 
 
@@ -219,12 +307,13 @@ void task3_LED_Handler(void* parameters){
 			set_leds_off();
 			//SET TO NEW VALUE
 			switch(led_value){
-			case LED_3: HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, 1);
-			case LED_4: HAL_GPIO_WritePin(LD4_GPIO_Port, LD4_Pin, 1);
-			case LED_5: HAL_GPIO_WritePin(LD5_GPIO_Port, LD5_Pin, 1);
-			case LED_6: HAL_GPIO_WritePin(LD6_GPIO_Port, LD6_Pin, 1);
-			case LED_7: HAL_GPIO_WritePin(LD7_GPIO_Port, LD7_Pin, 1);
-			case LED_8: HAL_GPIO_WritePin(LD8_GPIO_Port, LD8_Pin, 1);
+			case LED_3:{ HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, 1);break;}
+			case LED_4:{ HAL_GPIO_WritePin(LD4_GPIO_Port, LD4_Pin, 1);break;}
+			case LED_5:{ HAL_GPIO_WritePin(LD5_GPIO_Port, LD5_Pin, 1);break;}
+			case LED_6:{ HAL_GPIO_WritePin(LD6_GPIO_Port, LD6_Pin, 1);break;}
+			case LED_7:{ HAL_GPIO_WritePin(LD7_GPIO_Port, LD7_Pin, 1);break;}
+			case LED_8:{ HAL_GPIO_WritePin(LD8_GPIO_Port, LD8_Pin, 1);break;}
+			default: set_leds_off();break;
 			}
 		}
 		vTaskDelay(10);
@@ -251,6 +340,7 @@ int main(void)
 
   /* USER CODE BEGIN Init */
   xQueue_led = xQueueCreate( 1, sizeof( uint32_t ) );
+  xQueue_reading = xQueueCreate( 1, sizeof( uint32_t ) );
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -272,6 +362,10 @@ int main(void)
 	SEGGER_SYSVIEW_Conf();
 	SEGGER_SYSVIEW_Start();
 
+	//INIT MEMS
+	init_mems();
+	set_leds_off();
+	//START TASKS
 	status = xTaskCreate(task2_MEMS_Handler,"task2_MEMS_Handler",200, "task2_MEMS_Handler", 1, &task2_MEMS_handle);
 	configASSERT(status==pdPASS);
 
