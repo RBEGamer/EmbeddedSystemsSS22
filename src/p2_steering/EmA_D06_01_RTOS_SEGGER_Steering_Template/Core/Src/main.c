@@ -120,6 +120,19 @@ void start_random_timer(){
 	HAL_TIM_Base_Init(&htim6);
 }
 
+void start_fail_timer(){
+
+
+	//SET PERIOD
+	//START TIMER FIRST => INIT AGAIN WITH NEW PERIOD
+	//HAL_TIM_Base_Start_IT(&htim7);
+	//htim7.Init.Period = 2000;
+//	htim7.Instance->CNT = 0;
+	//htim6.Instance->ARR  = MAX_RND_VALUE;
+	HAL_TIM_Base_Init(&htim7);
+	HAL_TIM_Base_Start_IT(&htim7);
+}
+
 uint32_t get_random_direction(){
 	//GET RANDOM NUMBER
 	uint32_t rng = 0;
@@ -171,14 +184,25 @@ uint32_t mems_to_direction(){
 
 void task2_MEMS_Handler(void* parameters){
 	uint32_t read_direction = 0;
-
+	uint32_t last_dir = 0;
+	uint32_t trg = 0;
 	while (1){
 		vTaskDelay(10);
 		//GET READING
 		read_direction = mems_to_direction();
+
+		if(read_direction != last_dir){
+			trg = 0;
+			last_dir = read_direction;
+		}else{
+			trg++;
+		}
 		//SEND IT
-		if(uxQueueSpacesAvailable(xQueue_reading) > 0 && read_direction != DIRECTION_INVALID){
-				xQueueSendToBack( xQueue_reading,&read_direction,( TickType_t ) 10 );
+		//SEND MESSAGE ONLY IF 10 SAME READINGS ARE READ
+		if(trg>10){
+				xQueueSendToFront( xQueue_reading,&read_direction,( TickType_t ) 10 );
+
+				trg = 0;
 		}
 	}
 }
@@ -233,6 +257,7 @@ void task1_Control_Handler(void* parameters){
 			}
 		}else if(status == STATUS_GAME_START_GAME){
 			//SET AND START RANDOM TIMER
+			send_led_set_message(LED_OFF);
 			start_random_timer();
 			status = STATUS_RANDOM_TIMER_RUNNING;
 
@@ -251,7 +276,7 @@ void task1_Control_Handler(void* parameters){
 			direction = get_random_direction();
 			send_led_set_message(direction);
 			//START NEW TIMER
-			HAL_TIM_Base_Start_IT(&htim7);
+			start_fail_timer();
 			//START MEASUREMENT TASK
 			vTaskResume(task2_MEMS_handle);
 			//SET STATE
@@ -260,7 +285,7 @@ void task1_Control_Handler(void* parameters){
 
 		}else if(status == STATUS_MEASUREMENT_RUNNING){
 			//TIMER TIMEOUT
-
+			event_val = 0;
 			if(xTaskNotifyWait(0,0, &event_val, ( TickType_t ) 10 ) == pdTRUE && event_val == 2){
 				//STOP RANDOM TIMER
 				HAL_TIM_Base_Stop_IT(&htim7);
@@ -269,10 +294,9 @@ void task1_Control_Handler(void* parameters){
 				vTaskDelay( 2000/portTICK_PERIOD_MS );
 				status = STATUS_GAME_START_GAME;
 			}
-
-
 			//GET A VALID MOVEMENT RESULT
-			if(xQueueReceive( xQueue_reading,( void * ) &event_val,( TickType_t ) 10 ) == pdTRUE){
+			event_val = 0;
+			if(xQueueReceive( xQueue_reading,( void * ) &event_val,( TickType_t ) 10 ) == pdTRUE && event_val != DIRECTION_INVALID){
 
 				//DISPLAY RESULT
 				if(event_val == direction){
