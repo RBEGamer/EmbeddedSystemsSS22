@@ -129,7 +129,7 @@ void start_fail_timer(){
 	//htim7.Init.Period = 2000;
 //	htim7.Instance->CNT = 0;
 	//htim6.Instance->ARR  = MAX_RND_VALUE;
-	HAL_TIM_Base_Init(&htim7);
+//	HAL_TIM_Base_Init(&htim7);
 	HAL_TIM_Base_Start_IT(&htim7);
 }
 
