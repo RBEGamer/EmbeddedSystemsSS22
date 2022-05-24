@@ -207,6 +207,7 @@ void TIM6_DAC_IRQHandler(void)
   /* USER CODE END TIM6_DAC_IRQn 0 */
   HAL_TIM_IRQHandler(&htim6);
   /* USER CODE BEGIN TIM6_DAC_IRQn 1 */
+  xTaskNotifyFromISR(task1_Control_handle, 3, eSetValueWithOverwrite, 0);
 	traceISR_EXIT();
   /* USER CODE END TIM6_DAC_IRQn 1 */
 }
