@@ -224,8 +224,8 @@ void TIM7_IRQHandler(void)
   /* USER CODE END TIM7_IRQn 0 */
   HAL_TIM_IRQHandler(&htim7);
   /* USER CODE BEGIN TIM7_IRQn 1 */
-	HAL_TIM_Base_Stop_IT(&htim7);
-	xTaskNotifyFromISR(task1_Control_handle, 2, eSetValueWithOverwrite, 0);
+  HAL_TIM_Base_Stop_IT(&htim7);
+  xTaskNotifyFromISR(task1_Control_handle, 2, eSetValueWithOverwrite, 0);
 	//STOP DIRECTLY ?
 
 	traceISR_EXIT();

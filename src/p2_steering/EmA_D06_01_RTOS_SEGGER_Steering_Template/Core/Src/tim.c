@@ -90,6 +90,7 @@ void MX_TIM7_Init(void)
   }
   /* USER CODE BEGIN TIM7_Init 2 */
 
+//  htim7->Instance->CR1 |= 0;
   /* USER CODE END TIM7_Init 2 */
 
 }
