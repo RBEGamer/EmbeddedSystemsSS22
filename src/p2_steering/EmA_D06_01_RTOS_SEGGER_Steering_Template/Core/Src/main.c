@@ -49,14 +49,15 @@ QueueHandle_t xQueue_reading;
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-#define STATUS_GAME_INIT 				0
-#define STATUS_GAME_WAIT_FOR_START		1
-#define STATUS_GAME_START_GAME			2
-#define STATUS_RANDOM_TIMER_RUNNING		3
-#define STATUS_RANDOM_TIMER_EXPIRED		4
-#define STATUS_MEASUREMENT_RUNNING	 	5
-#define STATUS_MEASUREMENT_DONE 		6
-#define STATUS_INVALID_MEASUREMENT		7
+#define STATUS_GAME_INIT 					0
+#define STATUS_GAME_WAIT_FOR_START			1
+#define STATUS_GAME_WAIT_FOR_START_BLINK 	2
+#define STATUS_GAME_START_GAME				3
+#define STATUS_RANDOM_TIMER_RUNNING			4
+#define STATUS_RANDOM_TIMER_EXPIRED			5
+#define STATUS_MEASUREMENT_RUNNING	 		6
+#define STATUS_MEASUREMENT_DONE 			7
+#define STATUS_INVALID_MEASUREMENT			8
 
 #define LED_OFF 0
 #define LED_3 	1
@@ -109,7 +110,9 @@ void start_random_timer(){
 	uint32_t rng = 0;
 	HAL_RNG_GenerateRandomNumber(&hrng, &rng);
 	//MAP 0-65536 => MIN_RND_VALUE-MAX_RND_VALUE
-	rng =  ((uint16_t)rng) * ((MAX_RND_VALUE - MIN_RND_VALUE)/65535) + MIN_RND_VALUE;
+	rng =  (rng%3000);
+	rng += 1000;
+
 
 	//SET PERIOD
 	//START TIMER FIRST => INIT AGAIN WITH NEW PERIOD
@@ -118,6 +121,7 @@ void start_random_timer(){
 	//htim6.Instance->CNT = 0;
 	//htim6.Instance->ARR  = MAX_RND_VALUE;
 	HAL_TIM_Base_Init(&htim6);
+	HAL_GPIO_WritePin(TRG_GPIO_Port, TRG_Pin,1);
 }
 
 void start_fail_timer(){
@@ -241,20 +245,21 @@ void task1_Control_Handler(void* parameters){
 			//WAIT FOR BUTTON NOTIFY EVENT
 			if(xTaskNotifyWait(0,0, &event_val, portMAX_DELAY) == pdTRUE && event_val == 1){
 				send_led_set_message(LED_7);
-				//BLINK GREEN LED
-				for(c = 0; c < 3; c++){
-					send_led_set_message(LED_OFF);
-					vTaskDelay( 500/portTICK_PERIOD_MS );
-					send_led_set_message(LED_7);
-					vTaskDelay( 500/portTICK_PERIOD_MS );
-
-				}
-				send_led_set_message(LED_OFF);
-
-				//SET AND START RANDOM TIMER
-				start_random_timer();
-				status = STATUS_GAME_START_GAME;
+				status = STATUS_GAME_WAIT_FOR_START_BLINK;
 			}
+			//THIS STATE WAS ADDED TO RESTART THE GAME AS ENTRY POINT
+		}else if(status == STATUS_GAME_WAIT_FOR_START_BLINK){
+			send_led_set_message(LED_7);
+			//BLINK GREEN LED
+			for(c = 0; c < 3; c++){
+				send_led_set_message(LED_OFF);
+				vTaskDelay( 500/portTICK_PERIOD_MS );
+				send_led_set_message(LED_7);
+				vTaskDelay( 500/portTICK_PERIOD_MS );
+			}
+			send_led_set_message(LED_OFF);
+			//START RANDOM TIMER
+			status = STATUS_GAME_START_GAME;
 		}else if(status == STATUS_GAME_START_GAME){
 			//SET AND START RANDOM TIMER
 			send_led_set_message(LED_OFF);
@@ -292,7 +297,8 @@ void task1_Control_Handler(void* parameters){
 				//SET NEW STATE
 				send_led_set_message(LED_8);
 				vTaskDelay( 2000/portTICK_PERIOD_MS );
-				status = STATUS_GAME_START_GAME;
+				//RESTART GAME
+				status = STATUS_GAME_WAIT_FOR_START_BLINK;
 			}
 			//GET A VALID MOVEMENT RESULT
 			event_val = 0;
@@ -307,8 +313,8 @@ void task1_Control_Handler(void* parameters){
 
 				//WAIT
 				vTaskDelay( 2000/portTICK_PERIOD_MS );
-				//RESET
-				status = STATUS_GAME_START_GAME;
+				//RESTART GAME
+				status = STATUS_GAME_WAIT_FOR_START_BLINK;
 			}
 		}
 

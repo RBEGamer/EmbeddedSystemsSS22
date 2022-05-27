@@ -207,6 +207,7 @@ void TIM6_DAC_IRQHandler(void)
   /* USER CODE END TIM6_DAC_IRQn 0 */
   HAL_TIM_IRQHandler(&htim6);
   /* USER CODE BEGIN TIM6_DAC_IRQn 1 */
+  HAL_GPIO_WritePin(TRG_GPIO_Port, TRG_Pin,0);
   HAL_TIM_Base_Stop_IT(&htim6);
   xTaskNotifyFromISR(task1_Control_handle, 3, eSetValueWithOverwrite, 0);
 	traceISR_EXIT();
@@ -218,11 +219,11 @@ void TIM6_DAC_IRQHandler(void)
   */
 void TIM7_IRQHandler(void)
 {
-	/* USER CODE BEGIN TIM7_IRQn 0 */
+  /* USER CODE BEGIN TIM7_IRQn 0 */
 	traceISR_ENTER();
-	/* USER CODE END TIM7_IRQn 0 */
-	HAL_TIM_IRQHandler(&htim7);
-	/* USER CODE BEGIN TIM7_IRQn 1 */
+  /* USER CODE END TIM7_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim7);
+  /* USER CODE BEGIN TIM7_IRQn 1 */
 	HAL_TIM_Base_Stop_IT(&htim7);
 	xTaskNotifyFromISR(task1_Control_handle, 2, eSetValueWithOverwrite, 0);
 	//STOP DIRECTLY ?
