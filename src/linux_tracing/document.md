@@ -19,7 +19,7 @@ Die Linux-Tracing Funktionalität und die bestehenden Tools, welche im Linux-Ker
 
 ## Ringbuffer
 
-Bei einem Ringbuffer handelt sich um eine Datenstruktur, die es READER und WRITER erleichtert, Informationen asynchron auszutauschen. Der Puffer wird in der Regel als Array mit zwei Zeigern implementiert. Einem Lesezeiger und einem Schreibzeiger. Man liest aus dem Puffer, indem man den Inhalt des Lesezeigers liest und dann den Zeiger auf das nächste Element erhöht, und ebenso beim Schreiben in den Puffer mit dem Schreibzeiger.
+Bei einem Ringbuffer handelt sich um eine Datenstruktur, die es `reader` und `writer` erleichtert, Informationen asynchron auszutauschen. Der Puffer wird in der Regel als Array mit zwei Zeigern implementiert. Einem Lesezeiger und einem Schreibzeiger. Man liest aus dem Puffer, indem man den Inhalt des Lesezeigers liest und dann den Zeiger auf das nächste Element erhöht, und ebenso beim Schreiben in den Puffer mit dem Schreibzeiger.
 
 ## Debug-Filesystem
 
@@ -188,7 +188,6 @@ Somit ist es möglich zu verschiedenen Laufzeiten des zu analysierenden Systems 
 ### uprobes
 
 Eine Weiterentwicklung zu den kprobes sind die uprobes. Mit diesem können zur Laufzeit Events in eine Applikation eingebunden werden. 
-
 Wenn ein uprobes hinzugefügt werden soll, muss davor noch was gemacht werden. Bei der Nutzung von kprobes kann ein einfacher Symbolnamen spezifiziert werden. Aufgrund das alle Applikationen ihren eigenen virtuellen Adressraum besitzen, haben diese auch einen anderen Adressbasis. Beim Erzeugen eines uprobes wird das Adressoffset im Textsegment der jeweiligen Applikation benötigt.
 
 ```c++
@@ -209,24 +208,16 @@ int main(void)
 ```bash
 # CREATE EXECUTE OBJECT
 $ /root/gcc hello.c -o hello
-
 # GET OFFSET
 $ objdump -F -S -D hello | less
-
 # CREATE A uprobe_event
 $ echo "p:my_uprobe /path_to_application/hello:<0xOffset>" > uprobe_events
-
 # ACTIVATE UPROBE EVENTS
 $ echo 1 > /sys/kernel/tracing/events/uprobes/my_uprobe/enable
-
 # EXECUTE
 $ /root/hello
-# Hello uprobe
-# Hello uprobe
-# Hello uprobe
-# Hello urpobe
-# Hello uprobe
-
+Hello uprobe
+[...]
 # PRINT TRACED EVENTS
 $ cat /sys/kernel/debug/tracing/trace
 ```
