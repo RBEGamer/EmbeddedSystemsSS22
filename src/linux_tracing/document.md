@@ -1,35 +1,52 @@
 # Einleitung
 
 Tracing ist die spezielle Verwendung der Protokollierung zur Aufzeichnung von Informationen über den Ausführungsablauf eines Programms.
-Oft werden mit eigenständig hinzugefügte Print-Messages der Code debuggt. Somit verfolgt man die Anweisungen mit einem eigenem tracing-System.
-Linux bringt einige eigenständige Tools mit, mit denen es möglich ist Vorgänge innerhalb von einem Embedded-System nachvollziehen und analysieren zu können.
-Die Linux-Tracing Funktionalität und die bestehenden Tools, welche im Linux-Kernel integriert sind, helfen so dabei bei der Identifikation von Laufzeiten, Nebenläufigkeiten  und der Untersuchung von Latenzproblemen.
+Oft werden mit eigenständig hinzugefügten Print-Messages der Code um Debug-Ausgaben erweitert.
+Somit verfolgt man die Anweisungen mit einem eigenem tracing-System.
+
+Linux bringt einige eigenständige Tools mit, mit denen es möglich ist Vorgänge innerhalb von einem Linux-System nachvollziehen und analysieren zu können.
+Die Linux-Tracing Funktionalität und die zur Verfügung stehenden Tools, helfen so dabei bei der Identifikation von Laufzeiten, Nebenläufigkeiten und der Untersuchung von Latenzproblemen. Hierzu sind bereits alle nötigen Tools und Funktionaltitäten im Linux-Kernel integriert.[@dbgfs]
 
 ## Relevanz
 
-Bei Mikrokontrollern und meist in Zusammenhang mit Realtime OS ist jede Aktion die Ausgeführt wird von hoher Bedeutung. Moderne Linux Systeme sind sehr komplex und bestehen aus vielen Softwaremodulen, welche auf unterschiedlichesten Weißen untereinander interagieren. Um zu verstehen warum gewisse Aktionen ausgeführt werden, ist es wichtig Systemnah debuggen und diese analysieren zu können. Oft können Fehler repoduziert und mit solchen Anaylsen identifiziert werden. Zusätzlich besteht bei Custom Driver die Möglichkeit während des bootvorgangs zu debuggen. 
+Bei Mikrokontrollern und meist in Zusammenhang mit Echtzeit-Betriebsystemen ist jede Aktion die Ausgeführt wird von hoher Bedeutung. Moderne Linux Systeme sind sehr komplex und bestehen aus vielen Softwaremodulen, welche auf unterschiedlichesten Weißen untereinander interagieren.
+Um diese Interaktionen nachzuvollziehen können und um zu verstehen wie sich Softwarekomponenten im Verbund verhalten, ist es wichtig das System Systemnah debuggen und diese analysieren zu können. Oft können Fehler repoduziert und mit solchen Anaylsen identifiziert werden. Zusätzlich besteht bei Custom Driver die Möglichkeit während des Bootvorgangs zu debuggen. 
 
 # Grundlagen
 
+Um die Tracing-Funktionalität auf einem Linux-System verwenden zu können, muss das System für deren Verwenung vorbereitet werden.
+Hierzu müssen unter das Debug-Filesytem auf dem Ziel-System aktiviert werden und die entsprechende Art des zu Tracings, entsprechen der Anwendung gewählt werden.
+
 ## Ringbuffer
 
-Bei einem Ringbuffer handelt sich um eine Datenstruktur, die es `reader` und `writer` erleichtert, Informationen asynchron auszutauschen. Der Puffer wird in der Regel als Array mit zwei Zeigern implementiert. Einem Lesezeiger und einem Schreibzeiger. Man liest aus dem Puffer, indem man den Inhalt des Lesezeigers liest und dann den Zeiger auf das nächste Element erhöht, und ebenso beim Schreiben in den Puffer mit dem Schreibzeiger.
+Bei einem Ringbuffer handelt sich um eine Datenstruktur, die das asynchrone Lesen und Schreiben von Informationen erleichtert. Der Puffer wird in der Regel als Array mit zwei Zeigern implementiert. Einem Lesezeiger und einem Schreibzeiger. Man liest aus dem Puffer, indem man den Inhalt des Lesezeigers liest und dann den Zeiger auf das nächste Element erhöht, und ebenso beim Schreiben in den Puffer mit dem Schreibzeiger.
+So werden in der eingesetzten Rinbbufferimplementierung die Debug-Informationen gespeichert und ein Auslesen dieser ist mittels der Einträge im Debug-Filesystem möglich.
 
 ## Debug-Filesystem
 
-* möglichkeiten
+Das Debug-Filesystem, wurde in der Kernel-Version `2.6.10-rc3`[@dbgfs] eingeführt. Es bietet Zugriff auf Diagnose und Debug-Informationen auf Kernel-Ebene.
+
+Ein Vorteil gegenüber des Prozess-Filesystem `/proc` ist, dass jeder Entwickler hier auch eigene Daten zur späteren Diagnose einpflegen kann.
+Um das Dateisystem nutzen zu können, muss dies zuerst aktiviert werden. Nach der aktivierung, stehen die Ordner unter dem angegebenen Pfad zur Verfügung.
+
 
 ```bash
-#ENABLE DEBUG FS
+# ENABLE DEBUG FS
 $ sudo mount -t debugfs debugfs /sys/kernel/debug
+$ ls -lah /sys/kernel/debug | awk '{print $9}'
+hid
+usb 
+tracing
+[...]
 ```
+
 
 ## Tracing
 
-
-Durch das Debug-Filesystem ist jetzt der Zugriff auf die Debug und insbesondere auf die Tracing-Daten möglich.
-Im Debug-Filesystem ist nach aktivierung der `tracing`-Ordner vorhanden.
-In diesem werden die verfügbaren Events in Gruppen (Ordnern) dargestellt, auf welche im späteren Verlauf reagiert werden können. Zudem können hier auch die Verfügbaren `tracer` angezeigt und aktiviert werden, welche noch mehr debugging Optionen bereitstellen.
+Durch das Debug-Filesystem ist der Zugriff auf die Debug und insbesondere auf die Tracing-Daten möglich.
+Im Debug-Filesystem ist nach aktivierung die `tracing`-Ordnerstruktur vorhanden.
+In diesem werden verfügbaren Events in gruppiert in Ordnern dargestellt, auf welche im späteren Verlauf reagiert werden kann.
+Zudem können hier auch die Verfügbaren `tracer` angezeigt und aktiviert werden, welche noch weitere debugging Optionen bereitstellen.
 
 
 ### Tracer
@@ -46,7 +63,9 @@ $ echo nop > /sys/kernel/debug/tracing/current_tracer
 
 `tracer` sind zusätzliche Tracing-Tools, welche eine gezieltere Aggregierung von Events z.B. Filterung und somit tiefergehende Analyse erlauben.
 Zum Beispiel erlaubt der `ftrace`-Tracer eine detaillierte Ereignis-Filterung auf spezifizierte Events[@ftraceintroducation].
+
 Der `function_graph`-Tracer gibt bei Verwendung zusätzliche Informationen, wie z.B. die Laufzeit von einzelnen Funktionen[@fgtrace].
+
 Auch kann dieser den Stacktrace und den Call-Stack übersichtlich darstellen, indem hier die Namen der aufgerufenen Funktionen ausgegeben werden. 
 
 ```bash
@@ -65,6 +84,21 @@ $ cat /sys/kernel/debug/tracing/trace
 
 ### Events
 
+Ein Event kann zum Beispiel durch das Lesen und Schreiben auf den System I2C-Bus vom Kernel ausgelößt werden. Wenn das Event im Debug-Filesystem aktiviert wurde, stellt dieses die Informationen des Events bereit. Je nach Typ können unterschiedlichste Informationen dem Nutzer bereitgestellt werden.
+
+Im Beispiel des I2C-Events kann nachvollzogen werden, welche Nachrichten an eine bestimmte Adresse gesendet wurden.
+
+```bash
+$ mount -t debugfs none /sys/kernel/debug
+$ cd /sys/kernel/debug/tracing/
+$ echo nop > current_tracer
+$ echo 1 > events/i2c/enable
+$ echo 1 > tracing_on
+$ cat /sys/kernel/debug/tracing/trace
+i2c_write: i2c-5 0 a=048 f=0001 l=8
+i2c_read: i2c-5 1 a=048 f=0002 l=9
+```
+
 In der `ls`-Ausgabe des `events`-Ordners des Debug-Filesystems ist zu sehen, welche Events abgefangen und mittels der Linux-Tracing-Tools protokoliert werden können.
 
 ```bash
@@ -72,30 +106,21 @@ In der `ls`-Ausgabe des `events`-Ordners des Debug-Filesystems ist zu sehen, wel
 $ cd /sys/kernel/debug/tracing/events
 $ ls -lah | awk '{print $9}'
 alarmtimer
-clk
-cpuhp
 drm
 exceptions
-ext4
-# =>  EXT4_READPAGE, EXT4_WRITEPAGE, EXT4_ERROR, EXT4_FREE_BLOCKS
+ext4 #READPAGE, WRITEPAGE, ERROR, FREE_BLOCKS
 filelock
 filemap
-fs_dax
-ftrace
-gpio
-# => GPIO_DIRECTION, GPIO_VALUE
+gpio #GPIO_DIRECTION, GPIO_VALUE
 hda
 i2c
 irq
 net
-smbus
-# => READ, WRITE, REPLY
-sock
-# => SOCKET_STATE_CHANGED, SOCK_EXCEED_BUFFER_LIMIT, SOCK_REC_QUEUE_FULL
+smbus #READ, WRITE, REPLY
+sock #STATE_CHANGED, EXCEED_BUFFER_LIMIT, REC_QUEUE_FULL
 spi
 tcp
-timer
-# => TIMER_STOP, TIMER_INIT, TIMER_EXPIRED
+timer #TIMER_STOP, TIMER_INIT, TIMER_EXPIRED
 [...]
 ```
 
@@ -107,7 +132,6 @@ Durch diese ist es später möglich anzugeben, ob dieses Event aufgezeichnet wer
 ```bash
 $ cd /sys/kernel/debug/tracing/events/ext4
 $ ls -lah | awk '{print $9}'
-
 # EVENTS FOR EXT4
 ext4_write_end
 ext4_writepage
@@ -122,7 +146,7 @@ format
 
 Die optionale `format`-Datei kann zusätzliche Informationen bereitstellen über das, durch das Event bereitgestellt Format der Ausgabe.
 Das folgende Beispiel zeigt das Ausgabeformat für das Scheduler-Wakeup `sched_wakeup`-Event.
-Somit kann nicht nur in Erfahrung gebracht werden, wann und ob das Event ausgelößt hat, sondern es können auch weitere Event-Spezifische Informationen durch das Event gemeldet werden. 
+Somit kann nicht nur in Erfahrung gebracht werden, wann und ob das Event ausgelößt hat, sondern es können auch weitere Event-Spezifische Informationen durch das Event gemeldet werden.
 
 ```bash
 $  cat /sys/kernel/debug/tracing/events/sched/sched_wakeup/format
@@ -132,14 +156,12 @@ format:
 	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
 	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
 	field:int common_pid;	offset:4;	size:4;	signed:1;
-
 	field:char comm[16];	offset:8;	size:16;	signed:1;
 	field:pid_t pid;	offset:24;	size:4;	signed:1;
 	field:int prio;	offset:28;	size:4;	signed:1;
 	field:int success;	offset:32;	size:4;	signed:1;
 	field:int target_cpu;	offset:36;	size:4;	signed:1;
 ```
-
 
 
 
@@ -162,14 +184,15 @@ $ echo 1 > ./ext4_readpage/enable
 $ echo 1 > ./ext4_writepage/enable
 ```
 
-Nach dem Aktivieren der Events, können 
+Nach dem Aktivieren der Events, können diese z.B. `Trace-Log` Aufgezeichnet oder anderweitig ausgegeben werden.
 
 
 
 ## Probes
 
-* was sind probes
-### kprobes
+
+
+### Kernel-Probes
 
 `kprobes`[@kprobes] können dazu verwendet werden, Laufzeit und Performance-Daten des Kernels zu sammeln.
 Der Vorteil and diesen ist, dass diese Daten ohne Unterbrechnung der Ausführung auf CPU-Instruktions-Ebene aggregiert werden können, anders wie bei dem Debuggen eines Programms mittels Breakpoints.
@@ -178,48 +201,54 @@ Somit ist es möglich zu verschiedenen Laufzeiten des zu analysierenden Systems 
 
 Der `kretprobes`[@kretprobes] ermöglicht uns auf den Rückgabewert jeder Kernel- oder Modulfunktion zuzugreifen! Die Möglichkeit, den Rückgabewert einer bestimmten Funktion dynamisch nachzuschlagen, kann in einem Debug-Szenario ein entscheidender Vorteil sein.
 
-### uprobes
+### User-Level-Probes
 
-Eine Weiterentwicklung zu den kprobes sind die uprobes. Mit diesem können zur Laufzeit Events in eine Applikation eingebunden werden. 
-Wenn ein uprobes hinzugefügt werden soll, muss davor noch was gemacht werden. Bei der Nutzung von kprobes kann ein einfacher Symbolnamen spezifiziert werden. Aufgrund das alle Applikationen ihren eigenen virtuellen Adressraum besitzen, haben diese auch einen anderen Adressbasis. Beim Erzeugen eines uprobes wird das Adressoffset im Textsegment der jeweiligen Applikation benötigt.
+Eine Weiterentwicklung zu den `kprobes` sind die `uprobes`. Mit diesem können zur Laufzeit Events in eine Applikation eingebunden werden. 
+Wenn ein `uprobes` hinzugefügt werden soll, muss davor noch was gemacht werden. 
 
 ```c++
-// hello.c
+//test.c
 #include <stdio.h>
-
 int main(void)
 {
     int i;
-
     for (i = 0; i < 5; i++)
         printf("Hello uprobe\n");
-
     return 0;
 }
 ```
+Bei der Nutzung von `kprobes` kann ein einfacher Symbolnamen spezifiziert werden. Aufgrund das alle Applikationen ihren eigenen virtuellen Adressraum besitzen, haben diese auch einen anderen Adressbasis. Beim Erzeugen eines `uprobes` wird das Adressoffset im Textsegment der jeweiligen Applikation benötigt.
+Der obere C++-Code, stellt ein einfaches Beispiel dar, indem die `printf`-Anweisung, mittels einer `uprobe` aufgezeichnet werden soll.
+Der Adressoffset kann mittels `objdump` und dem Pfad des zu analysierenden Programms.
+Danach kann die `uprobe` im Debuf-Filesystem registriert werden, unter Angabe des Offsets.
+Als letzer Schritt, muss das neu erstellte `uprobe`-Event noch aktiviert werden und die Aufzechnung oder Ausgabe der `uprobe`.
 
 ```bash
 # CREATE EXECUTE OBJECT
-$ /root/gcc hello.c -o hello
+$ gcc ./test.c -o ./tmp/test
 # GET OFFSET
-$ objdump -F -S -D hello | less
-# CREATE A uprobe_event
-$ echo "p:my_uprobe /path_to_application/hello:<0xOffset>" > uprobe_events
+$ objdump -F -S -D ./test | less | grep main
+0000000000001149 <main> (File Offset: 0x1149):
+# REGISTER A uprobe_event
+$ echo "p:my_uprobe /tmp/test:0x1149" > /sys/kernel/debug/tracing/uprobe_events
 # ACTIVATE UPROBE EVENTS
-$ echo 1 > /sys/kernel/tracing/events/uprobes/my_uprobe/enable
-# EXECUTE
+$ echo 1 > /sys/kernel/tracing/events/uprobes/enable
+# EXECUTE PROGRAM
 $ /root/hello
 Hello uprobe
 [...]
 # PRINT TRACED EVENTS
 $ cat /sys/kernel/debug/tracing/trace
+# tracer: nop
+# TASK-PID  CPU#  TIMESTAMP  FUNCTION
+#  |   |     |        |         |
+test-24842 [006] 258544.995456: printf: [...]
+[...]
 ```
 
-* für anwendungn
-* system libs
+Ein weiterer Anwendungsfall ist die Inspektion von System-Bibliotheken.
 
-
-## Nachteile / verscfälschung
+## Ressourcen
 
 Beim tracing werden zusätzliche ressourcen benötigt, die Auswirkungen auf die reale Ausführzeit haben. Bei Realtime OS können diese problemeatisch werden, wenn diese bereits mit dem maximalen ressourcen arbeitet.
 
@@ -228,55 +257,59 @@ Beim tracing werden zusätzliche ressourcen benötigt, die Auswirkungen auf die 
 * last minimieren auf traget minimieren
 * nur aufzeichnen und später analysieren z.B. auf einem anderen system
 * wie verhindern
-
+* grosse dateigrößen bei langen logs
 
 # Tools
 
 Allgemein sind keine speziellen Programme notwending um die Laufzeiteigenschaften eines Programms aufzuzeichnen.
 Der Linux-Kernel bringt bereits alle nötigen Funktionalitäten mit. Jedoch gibt es Tools die eine visuelle Darstellung der aufgezeichneten Events ermöglichen.
+Somit kann die aufzeichnung headless auf dem Ziel-System geschehen und die spätere Analyse mit entsprechenden Tools auf einem anderen System.
 
 
 ## Trace-Log Aufzeichnung
 
-Für die Log-Aufzeichnung wird ein Ringbuffer genutzt. Das Aufzeichnen in den Ringpuffer ist Standardmäßig aktiviert. 
-
+Für die Log-Aufzeichnung wird der zuvor beschriebene Ringbuffer genutzt. Das Aufzeichnen in den Ringpuffer ist standardmäßig aktiviert. 
+Kann aber bei Bedarf deaktiviert werden.
 ```bash
-# Disable the Recording on the ringbuffer
+$ echo 1 > tracing on
 $ echo 0 > tracing on
 ```
 
-Mit dem folgenden Befehl kann der Inhalt des Ringuffers, auch während einer Aufzeichung, ausgebeben werden:
-
+Mit dem folgenden Befehl kann der Inhalt des Ringuffers, auch während einer Aufzeichung, ausgebeben werden.
+Somit sind im Allgemeinen keine besonderen Tools notwendig. Anwendungen zum Ausgeben von Dateien wie z.B.`cat` oder `less`, welche sich auch auf kleinen Systemen befinden reichen aus.\ref{trace-log} 
 ```bash
-$ less trace
+$ less /sys/kernel/tracing/trace
+ 
 ```
-Das Lesen während einer Aufzeichnung mit trace hat keinerlei Einfluss auf den Inhalt des Ringpuffers. Die Ausgabe des letzten Kommandos wird dabei in einem menschenlesbaren Format dargestellt \ref{trace-log}:
+Das Lesen während einer Aufzeichnung mit trace hat keinerlei Einfluss auf den Inhalt des Ringpuffers.
 
 ![Trace-Log \label{trace-log}](images/trace-log-print.png)
 
-Die bisheirgen Aufzeichnungen der Ereignisse können mit einem einfachen Befehl entfernt werden:
+Die bisheirgen Aufzeichnungen der Ereignisse können mit dem leeren der `trace`-Datei entfernt werden:
 
 ```bash
 $ echo > trace
 ```
-Um einen Überlauf an Informationen zu verhinden kann die Aufzeichnung auch konsumierend gelesen werden. Somit werden beim Lesen zeitgleich diese aus dem Ringbuffer entfernt \ref{ringbuffer}.
+Um einen Überlauf an Informationen zu verhinden kann die Aufzeichnung auch konsumierend gelesen werden. Somit werden beim Lesen zeitgleich diese aus dem Ringbuffer entfernt.
 
 Eine weitere Kernpunkt ist, dass in Mehrkernsystemen für jeden einzelnen Core ein separater Ringbuffer existiert. Damit die Analyse von verschiedenen Events getrennt werden kann, kann mit jeder weiteren Instanz pro Core ein weiterer Ringbuffer angelgt werden. Dies erfolgt im Untervereziechnis `instances/`.
+Das Debug-Filesystem legt nach dem Anlegen des Ordners, die benötigten Dateien wie die `trace`-Datei automatisch an. Alle weiteren Operationen können dann auch auf dieser ausgeführt werden.
 
 ```bash
-$ cd instances
-$ mkdir inst0
-$ mkdir inst1
-
-# Remove if the instances is not needed anymore
-# rmdir inst0
+$ cd  /sys/kernel/tracing/instances
+$ mkdir ./inst0
+$ mkdir ./inst1
 ```
 
-![Ringbuffer \label{ringbuffer}](images/ringbuffer.png)
+
 
 ### trace-cmd
 
-Das Tool `trace-cmd`[@trace-cmd] ist das bekannteste und am meisten genutzte Hilfmittel zur Aufzeichnung. Dies ist ein kommandozeilenwerkzeug, das auf den meisten gängingen Linux Distrubitionen bereits vorinstalliert ist.
+![trace-cmd Report \label{trace-cmd-report}](images/trace-cmd.png)
+
+Das Tool `trace-cmd`[@trace-cmd] ist das bekannteste und am meisten genutzte Hilfmittel zur Aufzeichnung. Dies ist ein Kommandozeilenwerkzeug, das auf den meisten gängingen Linux-Distrubitionen bereits vorinstalliert ist.
+
+Mit dem letzten Befehl werden die ganzen Events zu Scheduler aufgezeichnet. Dabei werden während der Aufzeichnung kontinuierlich die Ringbuffer in konsumierender Form ausgelesen und in die Datei `trace.dat` geschrieben, falls mit dem `-o` keine eigene Datei eingegeben wurde. Als Informationen werden zu dem Inhalt des Ringbuffers auch zusätzlich notwendige Informationen über das Target, für die Auswertung auf beliebigen System gespeichert.
 
 ```bash
 # CHECK IF TRACING IS ENABLED
@@ -294,17 +327,9 @@ $ trace-cmd record -e sched ./program_executable
 $ trace-cmd -t function ./program_executable
 ```
 
-* output erklörung
-
-Mit dem letzten Befehl werden die ganzen Events zu Scheduler aufgezeichnet. Dabei werden während der Aufzeichnung kontinuierlich die Ringbuffer in konsumierender Form ausgelesen und in die Datei `trace.dat` geschrieben, falls mit dem `-o` keine eigene Datei eingegeben wurde. Als Informationen werden zu dem Inhalt des Ringbuffers auch zusätzlich notwendige Informationen über das Target, für die Auswertung auf beliebigen System gespeichert.
-
 Die `trace-cmd` Konsolenanwendung dient nicht nur zur Aufzeichnung der Trace-Events, sondern bietet auch die Möglichkeit augezeichnetet Reports visuell darzustellen.
 Die Ausgabe erfolgt mit dem Befehl `trace-cmd report [-i <Dateiname>]` als Tabelle in der Konsole und ist somit rein Textbasiert\ref{trace-cmd-report}.
-
-![trace-cmd Report \label{trace-cmd-report}](images/trace-cmd.png)
-
-Auf diese Aufzeichnung zusätzlich ein Filter angewendet werden, um die Suche auf bestimten Erreignissen einzugrenzen.
-
+Auf Aufzeichnungen können zusätzliche Filter angewendet werden, um die Suche auf bestimten Erreignissen einzugrenzen.
 Mit dem Tool ist es einfach die Teilschritte zu automatisieren.
 
 ### bpftrace
@@ -342,7 +367,7 @@ $ kernelshark
 $ kernelshark -i <Dateiname>
 ```
 
-Im folgenden ist die grafische Darstellung zu sehen. Dabei besitzt jeder Task ein eigenen Farbton. Für jede CPU wird eine eigene Zeile dargestellt. Dieses Tool hat eine gewisse Ähnlichkeit mit der von uns genutzten Logic 2 Software.
+Im folgenden ist die grafische Darstellung\ref{kernelshark} zu sehen. Dabei besitzt jeder Task ein eigenen Farbton. Für jede CPU wird eine eigene Zeile dargestellt.
 
 ![Kernelshark \label{kernelshark}](images/kernelshark.png)
 
@@ -353,11 +378,8 @@ Im folgenden ist die grafische Darstellung zu sehen. Dabei besitzt jeder Task ei
 
 Dieses Beispiel soll zeigen, wie der Empfang von TCP-Netzwerkpaketen auf Paketverlust auf einem System überprüft werden kann.
 Hierbei soll analysiert werden, wie das System auf eine unerwartet große Menge an TCP-Paketen reagiert.
-
-## Ausgangsszenario
-
-* iot anwendungen
-* viele kleine pakete
+Dies kann zum Beispiel bei IOT-Anwendungen der Fall sein, bei denen das MQTT-Protokoll verwendet wird.
+Hierbei können viele kleine Netzwerkpakete von IOT-Sensoren, einen starken Traffik am Server zur folge haben.
 
 ## bpftrace Installation
 Hierbei wird auf dem zu analysierenden System `bpftrace`[@bpftrace] verwendet. Unter Debian-Systemen kann dies einfach über den APT-Package-Manager installiert werden. Jedoch ist diese Version welche in der Registry hinterlegt ist meist nicht aktuell.
@@ -371,7 +393,7 @@ $ cd ./bpftrace && mkdir -p build
 $ cmake -DCMAKE_BUILD_TYPE=Release . && make -j20
 $ sudo make install
 # GET TCP DROP EXAMPLE
-$ cp ./bpftrace/tools/tcpdrop.bt ~
+$ cp ./bpftrace/tools/tcpdrop.bt ~/
 ```
 
 ## TCPDROP.BT
@@ -536,8 +558,6 @@ $ sudo ./gpio_test
 
 ## Kernel des Testsystems
 
-
-
 Für den Test wurde als RT Kernel die Version `4.19.59-rt23-v7l+` verwendet, welche nicht alle Funktionaltitäten des aktuellen `5.10` Kernel besitzt.
 In diesem fiktiven Beispiel, wird die `systemd-networking >V.248` Funktionalität für das Batman-Protokoll benötigt, welche den Grund für die Umstellung darstellt und nicht trivial in den `4.x` Kernel integriert werden kann. Die Messungen wurden zuerst auf dem aktuellen `5.10 LTS` Kernel aufgezeichnet und im Anschluss wurde der RT-Kernel auf einem anderen System per Cross-Compilation[@rpi4rt] aus dem `rpi-4.19.y-rt` Branch des `raspberrypi/linux` Repository gebaut. Dieser Schritt war notwendig, da es kein fertiges RT-Kernel Image zur Verfügung stand.
 Die erzeugten Dateien wurden dann auf die Boot-Partition der SD Karte geschrieben und in der `/boot/config.txt` Datei wurde der neue Kernel installiert `kernel=kernel7_rt.img`.
@@ -568,13 +588,4 @@ Die resultierende Ausgabedatei `gpio_test_trace_*` enthält die von `trace-cmd` 
 
 
 
-## Visualisierung und Beurteilung des Trace-Logs
-
-### RT Kernel
-
-### LTS Kernel
-
-## Fazit
-
-* aufzeicnugn auf device => headless
-* analyse visuell
+## Auswertung
