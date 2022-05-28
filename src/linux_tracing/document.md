@@ -7,13 +7,7 @@ Die Linux-Tracing Funktionalität und die bestehenden Tools, welche im Linux-Ker
 
 ## Relevanz
 
-* multicore systeme unterscheid mikotrkontroller
-* moderne linux systeme sind sehr komplex und bestehen aud vielen Softwaremodulen, welche untereinander interagieren
-* systemnahes debugging, kann dann dabei helfen,  schwer zu erkennde und nicht einfach reproduzierbare fehler aufzufinden
-* auch möglichkeit bei custom driver deugging wärend des bootvorgangsb
-
-
-
+Bei Mikrokontrollern und meist in Zusammenhang mit Realtime OS ist jede Aktion die Ausgeführt wird von hoher Bedeutung. Moderne Linux Systeme sind sehr komplex und bestehen aus vielen Softwaremodulen, welche auf unterschiedlichesten Weißen untereinander interagieren. Um zu verstehen warum gewisse Aktionen ausgeführt werden, ist es wichtig Systemnah debuggen und diese analysieren zu können. Oft können Fehler repoduziert und mit solchen Anaylsen identifiziert werden. Zusätzlich besteht bei Custom Driver die Möglichkeit während des bootvorgangs zu debuggen. 
 
 # Grundlagen
 
