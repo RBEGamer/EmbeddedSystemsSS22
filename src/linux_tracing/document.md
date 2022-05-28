@@ -221,6 +221,8 @@ $ cat /sys/kernel/debug/tracing/trace
 
 ## Nachteile / verscfälschung
 
+Beim tracing werden zusätzliche ressourcen benötigt, die Auswirkungen auf die reale Ausführzeit haben. Bei Realtime OS können diese problemeatisch werden, wenn diese bereits mit dem maximalen ressourcen arbeitet.
+
 * welche effekte können entstehen
 * tracing bracuth ressoucen
 * last minimieren auf traget minimieren
