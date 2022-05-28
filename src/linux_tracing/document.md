@@ -3,7 +3,7 @@
 Tracing ist die spezielle Verwendung der Protokollierung zur Aufzeichnung von Informationen über den Ausführungsablauf eines Programms.
 Oft werden mit eigenständig hinzugefügte Print-Messages der Code debuggt. Somit verfolgt man die Anweisungen mit einem eigenem tracing-System.
 Linux bringt einige eigenständige Tools mit, mit denen es möglich ist Vorgänge innerhalb von einem Embedded-System nachvollziehen und analysieren zu können.
-Die Linux-Tracing Funktionalität und die bestehenden Tools, welche im Linux-Kernel integriert sind, helfen so dabei bei der Identifikation von Laufzeiten, Nebenläufigkeiten  und der Untersuchung von Latenzproblemen,
+Die Linux-Tracing Funktionalität und die bestehenden Tools, welche im Linux-Kernel integriert sind, helfen so dabei bei der Identifikation von Laufzeiten, Nebenläufigkeiten  und der Untersuchung von Latenzproblemen.
 
 ## Relevanz
 
@@ -11,7 +11,8 @@ Die Linux-Tracing Funktionalität und die bestehenden Tools, welche im Linux-Ker
 * moderne linux systeme sind sehr komplex und bestehen aud vielen Softwaremodulen, welche untereinander interagieren
 * systemnahes debugging, kann dann dabei helfen,  schwer zu erkennde und nicht einfach reproduzierbare fehler aufzufinden
 * auch möglichkeit bei custom driver deugging wärend des bootvorgangsb
-## Tracing
+
+
 
 
 # Grundlagen
@@ -180,8 +181,6 @@ Nach dem Aktivieren der Events, können
 Der Vorteil and diesen ist, dass diese Daten ohne Unterbrechnung der Ausführung auf CPU-Instruktions-Ebene aggregiert werden können, anders wie bei dem Debuggen eines Programms mittels Breakpoints.
 Ein weiterer Vorteil ist, dass das Registrieren der Kprobes dynamisch zur Laufzeit und ohne Änderungen des Programmcodes geschieht.
 Somit ist es möglich zu verschiedenen Laufzeiten des zu analysierenden Systems oder Programms, Daten zu verschiedenen Laufzeiten gezielt sammen zu können.
-
-#### kretprobes
 
 `kretprobes`[@kprobes]
 
@@ -525,13 +524,9 @@ int main(int argc, char *argv[])
     if (gpioInitialise() < 0){
         return -1;
     }
-
     gpioSetMode(GPIO, PI_OUTPUT);
-
     bool state = false;
-
-    while(running)
-    {
+    while(running){
         state = !state;
 	    gpioWrite(GPIO, (int)state);
     }
@@ -593,8 +588,7 @@ Die resultierende Ausgabedatei `gpio_test_trace_*` enthält die von `trace-cmd` 
 
 ### LTS Kernel
 
-```
-# Fazit
+## Fazit
 
 * aufzeicnugn auf device => headless
 * analyse visuell
