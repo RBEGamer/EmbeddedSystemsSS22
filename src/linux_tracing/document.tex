@@ -15,19 +15,14 @@ Nebenläufigkeiten und der Untersuchung von Latenzproblemen.
 \hypertarget{relevanz}{%
 \section{Relevanz}\label{relevanz}}
 
-\begin{itemize}
-\tightlist
-\item
-  multicore systeme unterscheid mikotrkontroller
-\item
-  moderne linux systeme sind sehr komplex und bestehen aud vielen
-  Softwaremodulen, welche untereinander interagieren
-\item
-  systemnahes debugging, kann dann dabei helfen, schwer zu erkennde und
-  nicht einfach reproduzierbare fehler aufzufinden
-\item
-  auch möglichkeit bei custom driver deugging wärend des bootvorgangsb
-\end{itemize}
+Bei Mikrokontrollern und meist in Zusammenhang mit Realtime OS ist jede
+Aktion die Ausgeführt wird von hoher Bedeutung. Moderne Linux Systeme
+sind sehr komplex und bestehen aus vielen Softwaremodulen, welche auf
+unterschiedlichesten Weißen untereinander interagieren. Um zu verstehen
+warum gewisse Aktionen ausgeführt werden, ist es wichtig Systemnah
+debuggen und diese analysieren zu können. Oft können Fehler repoduziert
+und mit solchen Anaylsen identifiziert werden. Zusätzlich besteht bei
+Custom Driver die Möglichkeit während des bootvorgangs zu debuggen.
 
 \hypertarget{grundlagen}{%
 \chapter{Grundlagen}\label{grundlagen}}
@@ -242,7 +237,11 @@ und ohne Änderungen des Programmcodes geschieht. Somit ist es möglich zu
 verschiedenen Laufzeiten des zu analysierenden Systems oder Programms,
 Daten zu verschiedenen Laufzeiten gezielt sammen zu können.
 
-\passthrough{\lstinline!kretprobes!}\cite{kprobes}
+Der \passthrough{\lstinline!kretprobes!}\cite{kretprobes} ermöglicht
+uns auf den Rückgabewert jeder Kernel- oder Modulfunktion zuzugreifen!
+Die Möglichkeit, den Rückgabewert einer bestimmten Funktion dynamisch
+nachzuschlagen, kann in einem Debug-Szenario ein entscheidender Vorteil
+sein.
 
 \hypertarget{uprobes}{%
 \subsection{uprobes}\label{uprobes}}
@@ -298,6 +297,11 @@ $ cat /sys/kernel/debug/tracing/trace
 
 \hypertarget{nachteile-verscfuxe4lschung}{%
 \section{Nachteile / verscfälschung}\label{nachteile-verscfuxe4lschung}}
+
+Beim tracing werden zusätzliche ressourcen benötigt, die Auswirkungen
+auf die reale Ausführzeit haben. Bei Realtime OS können diese
+problemeatisch werden, wenn diese bereits mit dem maximalen ressourcen
+arbeitet.
 
 \begin{itemize}
 \tightlist
