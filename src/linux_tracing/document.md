@@ -55,9 +55,9 @@ Zudem können hier auch die Verfügbaren `tracer` angezeigt und aktiviert werden
 $ cat /sys/kernel/debug/tracing/available_tracers
 hwlat blk mmiotrace function_graph wakeup_dl wakeup_rt wakeup function nop
 # USE SPECIFIC TRACER
-$ echo function_graph > /sys/kernel/debug/Tracing/current_tracer
+$ echo function_graph > /sys/kernel/debug/tracing/current_tracer
 # DISABLE TRACER USAGE
-$ echo nop > /sys/kernel/debug/Tracing/current_tracer
+$ echo nop > /sys/kernel/debug/tracing/current_tracer
 ```
 
 `tracer` sind zusätzliche Tracing-Tools, welche eine gezieltere Aggregierung von Events z.B. Filterung und somit tiefergehende Analyse erlauben.
@@ -69,8 +69,8 @@ Auch kann dieser den Stacktrace und den Call-Stack übersichtlich darstellen, in
 
 ```bash
 # CALL STACK USING FUNCTION_GRAPH TRACER
-$ echo function_graph > /sys/kernel/debug/Tracing/current_tracer
-$ cat /sys/kernel/debug/Tracing/trace
+$ echo function_graph > /sys/kernel/debug/tracing/current_tracer
+$ cat /sys/kernel/debug/tracing/trace
 # tracer: function_graph
 # CPU-  DURATION          FUNCTION CALLS
 # |     |   |            |  |   |
@@ -262,17 +262,19 @@ Somit kann die Aufzeichnung headless auf dem Ziel-System geschehen und die spät
 
 Für die Log-Aufzeichnung wird der zuvor beschriebene Ringbuffer genutzt. Das Aufzeichnen in den Ringpuffer ist standardmäßig aktiviert. 
 Kann aber bei Bedarf deaktiviert werden.
+
 ```bash
-$ echo 1 > Tracing on
-$ echo 0 > Tracing on
+# ENABLE TRACING
+$ echo 1 > tracing_on
+# DISBALE TRACING
+$ echo 0 > tracing_on
 ```
 
 Mit dem folgenden Befehl kann der Inhalt des Ringbuffers auch während einer Aufzeichnung, ausgebeben werden.
 Somit sind im Allgemeinen keine besonderen Tools notwendig. Anwendungen zum Ausgeben von Dateien wie z.B.`cat` oder `less`, welche sich auch auf kleinen Systemen befinden, sind ausreichend.\ref{trace-log} 
 
 ```bash
-$ less /sys/kernel/Tracing/trace
-
+$ less /sys/kernel/tracing/trace
 ```
 Das Lesen während einer Aufzeichnung mittels Trace hat keinerlei Einfluss auf den Inhalt des Ringbuffers.
 
@@ -562,7 +564,7 @@ $ i2cdetect -y 1
 10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
 20: 20 -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 ```
-Anhand der I2C-Adresse und der einfachheit der gesendeten Daten, kann auf einen `PCF8574` Port-Expander-IC geschlossen werden.
+Anhand der (+i2c)-Adresse und der einfachheit der gesendeten Daten, kann auf einen `PCF8574` Port-Expander-(+ic) geschlossen werden.
 Dieser nimmt jeweils an Adresse `0x20` ein Byte entgegen und schaltet somit die jeweiligen Ausgangspins.
 Der Quellcode bestätigt diese Erkenntnisse ebenfalls. Die in Python geschriebene "Black-Box" verwendet das `smbus`-Modul um auf den (+i2c)-Bus-1 zuzugreifen und sendet in einer Dauerschleife jeweils ein Byte.
 
