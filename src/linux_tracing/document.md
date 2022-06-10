@@ -10,12 +10,12 @@ Die Linux-Tracing Funktionalität und die zur Verfügung stehenden Tools helfen 
 ## Relevanz
 
 Bei Mikrokontrollern und auch im Zusammenhang mit Echtzeit-Betriebssystemen ist jede Aktion, die Ausgeführt wird, von hoher Bedeutung. Moderne Linux Systeme sind sehr komplex und bestehen aus vielen Softwaremodulen, welche auf unterschiedlichsten Weisen untereinander interagieren.
-Um diese Interaktionen nachzuvollziehen können und um zu verstehen, wie sich Softwarekomponenten im Verbund verhalten, ist es wichtig, das System systemnah zu debuggen, um diese analysieren zu können. Oft können Fehler reproduziert und mit solchen Analysen identifiziert werden. Zusätzlich besteht bei Custom Driver die Möglichkeit während des Bootvorgangs zu debuggen. 
+Um diese Interaktionen nachzuvollziehen können und um zu verstehen, wie sich Softwarekomponenten im Verbund verhalten, ist es wichtig, das System systemnah zu debuggen, um diese analysieren zu können. Oft können Fehler reproduziert und mit solchen Analysen identifiziert werden. Zusätzlich besteht bei Custom-Driver die Möglichkeit während des Bootvorgangs zu debuggen. 
 
 # Grundlagen
 
 Um die Tracing-Funktionalität auf einem Linux-System verwenden zu können, muss das System für deren Verwendung vorbereitet werden.
-Hierzu muss unter anderem das Debug-Filesytem auf dem Ziel-System aktiviert werden und die entsprechende Art des zu Tracings entsprechend der Anwendung gewählt werden.
+Hierzu muss unter anderem das Debug-(+fs) auf dem Ziel-System aktiviert werden und die entsprechende Art des zu Tracings entsprechend der Anwendung gewählt werden.
 
 ## Ringbuffer
 
@@ -275,6 +275,7 @@ Somit sind im Allgemeinen keine besonderen Tools notwendig. Anwendungen zum Ausg
 ```bash
 $ less /sys/kernel/tracing/trace
 ```
+
 Das Lesen während einer Aufzeichnung mittels Trace hat keinerlei Einfluss auf den Inhalt des Ringbuffers.
 Die bisherigen Aufzeichnungen der Ereignisse können mit dem Leeren der `trace`-Datei entfernt werden.
 
@@ -352,7 +353,7 @@ Das zuvor vorgestellte `tace-cmd` ist wie oben erwähnt nur ein textbasiertes An
 Kernelshark Tool bietet dem Anwender die Möglichkeit, die Trace-Aufzeichnungen grafisch zu analysieren. Dabei sind die beiden Tools aufeinander abgestimmt und werden gemeinsam entwickelt.
 Auch dieses Tool ist in den meisten Linux Distributionen vorinstalliert.
 
-Das vom trace-cmd erzeugte `trace.dat-Format` wird im Kernelshark als Eingabe erwartet. Wenn im folgendem ersten Befehl nichts eingegeben, dann wird nach der entsprechenden `trace.dat` im Verzeichnis gesucht.
+Das vom trace-cmd erzeugte `trace.dat`-Format wird im Kernelshark als Eingabe erwartet. Wenn im folgendem ersten Befehl nichts eingegeben, dann wird nach der entsprechenden `trace.dat` im Verzeichnis gesucht.
 
 ```bash
 # OPEN KERNELSHARK WITH trace.dat
@@ -420,7 +421,6 @@ Hierzu werden zwei Instanzen benötigt, der Server und der Client, welche auf de
 
 Um die Messung zu starten, wurde zuerst der `ntttcp`-Server gestartet; dieser empfängt die vom Sender gesendeten Pakete.
 Im zweiten Schritt wurde der `ntttcp`-Client auf dem anderen System gestartet. Hier wurde mittels `-t` Parameter die Laufzeit auf unendlich gestellt, somit werden durchgehend Pakete an den Server gesendet. Die Paketgröße wurde hier auf `16Byte` gestellt um somit viele kleine Pakete in kurzer Zeit erzeugen zu können.
-
 Im Anschluss wurde `bpftrace` gestartet, welches die Events als Logdatei `tcpdrop_log` in einem lesbaren Textformat ausgeben soll.
 
 ```bash
@@ -456,7 +456,7 @@ Das aufgezeichnete Trace für das `tcp_drop`-Event befindet sich in der `tcpdrop
 ## Ausgabe
 
 Die Ausgabe der Logdatei stellt Textbasiert nicht nur dar, ob ein (+tcp)-Paket verloren wurde, sondern gibt auch zusätzliche Informationen aus. Jeder Event-Trigger des `tcp_drop()` Events wird dabei mit der Systemzeit, Prozess-(+id) und dem Programm eingeleitet unter welches das Event ausgelöst hat. In diesem Fall wurde der Paketverlust durch ein Empfangenes Paket der `ntttcp`-Anwendung ausgelöst.
-Die Senderichtung des Pakets kann anhand der Quell- und Empfangs-IP-Adresse ermittelt werden.
+Die Senderichtung des Pakets kann anhand der Quell und Empfangs (+ip)-Adresse ermittelt werden.
 Danach folgt der Kernel-Stacktrace, in welchem der Funktionsaufruf-Verlauf bis zum Auslösen des überwachten Events aufgeführt ist.
 
 ```bash
