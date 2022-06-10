@@ -25,7 +25,6 @@ So werden in der eingesetzten Ringbuffer-Implementierung die Debug-Informationen
 ## Debug-Filesystem
 
 Das Debug-(+fs) wurde in der Kernel-Version `2.6.10-rc3`[@dbgfs] eingeführt. Es bietet Zugriff auf Diagnose und Debug-Informationen auf Kernel-Ebene.
-
 Ein Vorteil gegenüber des Prozess-(+fs) `/proc` ist, dass jeder Entwickler hier auch eigene Daten zur späteren Diagnose einpflegen kann.
 Um das Dateisystem nutzen zu können, muss dies zuerst aktiviert werden. Nach der Aktivierung stehen die Ordner unter dem angegebenen Pfad zur Verfügung.
 
@@ -180,8 +179,8 @@ Nach dem Aktivieren der Events, können diese z.B. `Trace-Log` Aufgezeichnet ode
 ### Kernel-Probes
 
 `kprobes`[@kprobes] können dazu verwendet werden, Laufzeit und Performance-Daten des Kernels zu sammeln.
-Der Vorteil dieser ist, dass Daten ohne Unterbrechung der Ausführung auf CPU-Instruktions-Ebene aggregiert werden können, anders als bei dem Debuggen eines Programms mittels Breakpoints.
-Ein weiterer Vorteil ist, dass das Registrieren der Kprobes dynamisch zur Laufzeit und ohne Änderungen des Programmcodes geschieht.
+Der Vorteil dieser ist, dass Daten ohne Unterbrechung der Ausführung auf Prozessor-Instruktions-Ebene aggregiert werden können, anders als bei dem Debuggen eines Programms mittels Breakpoints.
+Ein weiterer Vorteil ist, dass das Registrieren der `kprobes` dynamisch zur Laufzeit und ohne Änderungen des Programmcodes geschieht.
 Somit ist es möglich, zu verschiedenen Laufzeiten des zu analysierenden Systems oder Programms, Daten zu verschiedenen Laufzeiten gezielt sammeln zu können.
 
 Der `kretprobes`[@kretprobes] ermöglicht uns auf den Rückgabewert jeder Kernel- oder Modulfunktion zuzugreifen! Die Möglichkeit, den Rückgabewert einer bestimmten Funktion dynamisch nachzuschlagen, kann in einem Debug-Szenario ein entscheidender Vorteil sein.
@@ -206,7 +205,7 @@ int main(void)
 Bei der Nutzung von `kprobes` kann ein einfacher Symbolnamen spezifiziert werden. Aufgrund der Tastsache, dass alle Applikationen ihren eigenen virtuellen Adressraum besitzen, haben diese auch einen anderen Adressbasis. Beim Erzeugen eines `uprobes` wird das Adressoffset im Textsegment der jeweiligen Applikation benötigt.
 Der obere C++-Code, stellt ein einfaches Beispiel dar, indem die `printf`-Anweisung, mittels einer `uprobe` aufgezeichnet werden soll.
 Der Adressoffset kann mittels `objdump` und dem Pfad des zu analysierenden Programms.
-Danach kann die `uprobe` im Debuf-(+fs) registriert werden unter Angabe des Offsets.
+Danach kann die `uprobe` im Debug-(+fs) registriert werden unter Angabe des Offsets.
 Als letzter Schritt, muss das neu erstellte `uprobe`-Event noch aktiviert werden und die Aufzeichnung oder Ausgabe der `uprobe`.
 
 ```bash
@@ -277,13 +276,11 @@ Somit sind im Allgemeinen keine besonderen Tools notwendig. Anwendungen zum Ausg
 $ less /sys/kernel/tracing/trace
 ```
 Das Lesen während einer Aufzeichnung mittels Trace hat keinerlei Einfluss auf den Inhalt des Ringbuffers.
-
-
-
-Die bisherigen Aufzeichnungen der Ereignisse können mit dem Leeren der `trace`-Datei entfernt werden:
+Die bisherigen Aufzeichnungen der Ereignisse können mit dem Leeren der `trace`-Datei entfernt werden.
 
 ```bash
-$ echo ''> trace
+# EMPTY TRACELOG
+$ echo '' > trace
 ```
 Um einen Überlauf an Informationen zu verhindern kann die Aufzeichnung auch konsumierend gelesen werden. Somit werden beim Lesen zeitgleich diese aus dem Ringbuffer entfernt.
 
@@ -364,7 +361,7 @@ $ kernelshark
 $ kernelshark -i <Dateiname>
 ```
 
-Im Folgenden ist die grafische Darstellung\ref{kernelshark} zu sehen. Dabei besitzt jeder Task einen eigenen Farbton. Für jede CPU wird eine eigene Zeile dargestellt.
+Im Folgenden ist die grafische Darstellung\ref{kernelshark} zu sehen. Dabei besitzt jeder Task einen eigenen Farbton. Für jeden Prozessorkern wird eine eigene Zeile dargestellt.
 
 ![Kernelshark \label{kernelshark}](images/kernelshark.png)
 
@@ -416,13 +413,13 @@ kprobe:tcp_drop
 }
 ```
 
-Um eine Lastspitze auf dem System zu erzeugen, wurde das Netzwerkbenchmark-Tool `ntttcp`[@ntttcp] verwendet. Mit diesem ist es möglich, UDP und (+tcp) Pakete mit verschiedenen Paketgrößen zu generieren.
+Um eine Lastspitze auf dem System zu erzeugen, wurde das Netzwerkbenchmark-Tool `ntttcp`[@ntttcp] verwendet. Mit diesem ist es möglich, (+udp) und (+tcp) Pakete mit verschiedenen Paketgrößen zu generieren.
 Hierzu werden zwei Instanzen benötigt, der Server und der Client, welche auf dem gleichen System aber auch auf verschiedenen Systemen ausgeführt werden können.
 
 ## Aufzeichnung Trace-Log
 
 Um die Messung zu starten, wurde zuerst der `ntttcp`-Server gestartet; dieser empfängt die vom Sender gesendeten Pakete.
-Im zweiten Schritt wurde der `ntttcp`-Client auf dem anderen System gestartet. Hier wurde mittels `-t` Parameter die Laufzeit auf unendlich gestellt, somit werden durchgehend Pakete an den Server gesendet. Die Paketgröße wurde hier auf `4096Kbyte` gestellt umso eine Fragmentierung des (+tcp)-Paketes bei einer MTU von `1500byte` zu erzwingen.
+Im zweiten Schritt wurde der `ntttcp`-Client auf dem anderen System gestartet. Hier wurde mittels `-t` Parameter die Laufzeit auf unendlich gestellt, somit werden durchgehend Pakete an den Server gesendet. Die Paketgröße wurde hier auf `16Byte` gestellt um somit viele kleine Pakete in kurzer Zeit erzeugen zu können.
 
 Im Anschluss wurde `bpftrace` gestartet, welches die Events als Logdatei `tcpdrop_log` in einem lesbaren Textformat ausgeben soll.
 
@@ -458,7 +455,7 @@ Das aufgezeichnete Trace für das `tcp_drop`-Event befindet sich in der `tcpdrop
 
 ## Ausgabe
 
-Die Ausgabe der Logdatei stellt Textbasiert nicht nur dar, ob ein (+tcp)-Paket verloren wurde, sondern gibt auch zusätzliche Informationen aus. Jeder Event-Trigger des `tcp_drop()` Events wird dabei mit der Systemzeit, Prozess-ID und dem Programm eingeleitet unter welches das Event ausgelöst hat. In diesem Fall wurde der Paketverlust durch ein Empfangenes Paket der `ntttcp`-Anwendung ausgelöst.
+Die Ausgabe der Logdatei stellt Textbasiert nicht nur dar, ob ein (+tcp)-Paket verloren wurde, sondern gibt auch zusätzliche Informationen aus. Jeder Event-Trigger des `tcp_drop()` Events wird dabei mit der Systemzeit, Prozess-(+id) und dem Programm eingeleitet unter welches das Event ausgelöst hat. In diesem Fall wurde der Paketverlust durch ein Empfangenes Paket der `ntttcp`-Anwendung ausgelöst.
 Die Senderichtung des Pakets kann anhand der Quell- und Empfangs-IP-Adresse ermittelt werden.
 Danach folgt der Kernel-Stacktrace, in welchem der Funktionsaufruf-Verlauf bis zum Auslösen des überwachten Events aufgeführt ist.
 
