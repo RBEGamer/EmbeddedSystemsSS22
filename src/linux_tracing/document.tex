@@ -8,7 +8,7 @@ Code um Debug-Ausgaben erweitert. Somit verfolgt man die Anweisungen mit
 einem eigenen Tracing-System.
 
 Linux bietet einige eigenständige Tools, welche ermöglichen, Vorgänge
-innerhalb von einem Linux-System nachzuvollziehen und analysieren zu
+innerhalb eines Linux-Systems nachzuvollziehen und analysieren zu
 können. Die Linux-Tracing Funktionalität und die zur Verfügung stehenden
 Tools helfen so bei der Identifikation von Laufzeiten, Nebenläufigkeiten
 und der Untersuchung von Latenzproblemen. Hierzu sind bereits alle
@@ -26,30 +26,31 @@ untereinander interagieren. Um diese Interaktionen nachzuvollziehen
 können und um zu verstehen, wie sich Softwarekomponenten im Verbund
 verhalten, ist es wichtig, das System systemnah zu debuggen, um diese
 analysieren zu können. Oft können Fehler reproduziert und mit solchen
-Analysen identifiziert werden. Zusätzlich besteht bei Custom Driver die
-Möglichkeit während des Bootvorgangs zu debuggen.
+Analysen identifiziert werden. Zusätzlich besteht auch die Möglichkeit
+während des Bootvorgangs zu debuggen, dies kann zum Beispiel bei
+Kernel-Modulen hilfreich sein.
 
 \hypertarget{grundlagen}{%
 \chapter{Grundlagen}\label{grundlagen}}
 
 Um die Tracing-Funktionalität auf einem Linux-System verwenden zu
 können, muss das System für deren Verwendung vorbereitet werden. Hierzu
-muss unter anderem das Debug-Filesytem auf dem Ziel-System aktiviert
-werden und die entsprechende Art des zu Tracings entsprechend der
-Anwendung gewählt werden.
+muss unter anderem das Debug-\gls{fs} auf dem Ziel-System aktiviert
+werden und die entsprechende Art des Tracings entsprechend der Anwendung
+gewählt werden.
 
 \hypertarget{ringbuffer}{%
 \section{Ringbuffer}\label{ringbuffer}}
 
 Bei einem Ringbuffer handelt sich um eine Datenstruktur, die das
-asynchrone Lesen und Schreiben von Informationen erleichtert. Der Puffer
-wird in der Regel als Array mit zwei Zeigern implementiert. Einem
-Lesezeiger und einem Schreibzeiger. Man liest aus dem Puffer, indem man
-den Inhalt des Lesezeigers liest und dann den Zeiger auf das nächste
-Element erhöht und ebenso beim Schreiben in den Puffer mit dem
-Schreibzeiger. So werden in der eingesetzten Ringbuffer-Implementierung
-die Debug-Informationen gespeichert und ein Auslesen dieser ist mittels
-der Einträge im Debug-\gls{fs} möglich.
+asynchrone Lesen und Schreiben von Informationen erleichtert und ist die
+Basis für das Debug-\gls{fs} Der Puffer wird in der Regel als Array mit
+zwei Zeigern implementiert. Einem Lesezeiger und einem Schreibzeiger.
+Man liest aus dem Puffer, indem man den Inhalt des Lesezeigers liest und
+dann den Zeiger auf das nächste Element erhöht und ebenso beim Schreiben
+in den Puffer mit dem Schreibzeiger. So werden in der eingesetzten
+Ringbuffer-Implementierung die Debug-Informationen gespeichert und ein
+Auslesen dieser ist mittels der Einträge im Debug-\gls{fs} möglich.
 
 \hypertarget{debug-filesystem}{%
 \section{Debug-Filesystem}\label{debug-filesystem}}
@@ -57,7 +58,6 @@ der Einträge im Debug-\gls{fs} möglich.
 Das Debug-\gls{fs} wurde in der Kernel-Version
 \passthrough{\lstinline!2.6.10-rc3!}\cite{dbgfs} eingeführt. Es
 bietet Zugriff auf Diagnose und Debug-Informationen auf Kernel-Ebene.
-
 Ein Vorteil gegenüber des Prozess-\gls{fs}
 \passthrough{\lstinline!/proc!} ist, dass jeder Entwickler hier auch
 eigene Daten zur späteren Diagnose einpflegen kann. Um das Dateisystem
@@ -67,6 +67,7 @@ Aktivierung stehen die Ordner unter dem angegebenen Pfad zur Verfügung.
 \begin{lstlisting}[language=bash]
 # ENABLE DEBUG FS
 $ sudo mount -t debugfs debugfs /sys/kernel/debug
+# PRINT FOLDERS OF DEBUG FS
 $ ls -lah /sys/kernel/debug | awk '{print $9}'
 hid
 usb 
@@ -81,10 +82,10 @@ Durch das Debug-\gls{fs} ist der Zugriff auf die Debug und insbesondere
 auf die Tracing-Daten möglich. Im Debug-\gls{fs} ist nach der
 Aktivierung die \passthrough{\lstinline!Tracing!}-Ordnerstruktur
 vorhanden. In diesem werden verfügbaren Events in gruppiert in Ordnern
-dargestellt, auf welche im späteren Verlauf reagiert werden kann. Zudem
-können hier auch die Verfügbaren \passthrough{\lstinline!tracer!}
-angezeigt und aktiviert werden, welche noch weitere Debugging-Optionen
-bereitstellen.
+dargestellt, auf welche im späteren Verlauf reagiert und aufgezeichnet
+werden können. Zudem können hier auch die Verfügbaren
+\passthrough{\lstinline!tracer!} angezeigt und aktiviert werden, welche
+noch weitere Debugging-Optionen bereitstellen.
 
 \hypertarget{tracer}{%
 \subsection{Tracer}\label{tracer}}
@@ -94,9 +95,9 @@ bereitstellen.
 $ cat /sys/kernel/debug/tracing/available_tracers
 hwlat blk mmiotrace function_graph wakeup_dl wakeup_rt wakeup function nop
 # USE SPECIFIC TRACER
-$ echo function_graph > /sys/kernel/debug/Tracing/current_tracer
+$ echo function_graph > /sys/kernel/debug/tracing/current_tracer
 # DISABLE TRACER USAGE
-$ echo nop > /sys/kernel/debug/Tracing/current_tracer
+$ echo nop > /sys/kernel/debug/tracing/current_tracer
 \end{lstlisting}
 
 \passthrough{\lstinline!tracer!} sind zusätzliche Tracing-Tools, welche
@@ -108,16 +109,16 @@ Events\cite{ftraceintroducation}.
 
 Der \passthrough{\lstinline!function\_graph!}-Tracer gibt bei Verwendung
 zusätzliche Informationen, wie z.B. die Laufzeit von einzelnen
-Funktionen\cite{fgtrace}.
+Funktionen\cite{fgtrace} aus.
 
 Auch kann dieser den Stacktrace und den Call-Stack übersichtlich
-darstellen, indem hier die Namen der aufgerufenen Funktionen ausgegeben
-werden.
+darstellen, indem hier zusätzlich die Namen der aufgerufenen Funktionen
+ausgegeben werden.
 
 \begin{lstlisting}[language=bash]
 # CALL STACK USING FUNCTION_GRAPH TRACER
-$ echo function_graph > /sys/kernel/debug/Tracing/current_tracer
-$ cat /sys/kernel/debug/Tracing/trace
+$ echo function_graph > /sys/kernel/debug/tracing/current_tracer
+$ cat /sys/kernel/debug/tracing/trace
 # tracer: function_graph
 # CPU-  DURATION          FUNCTION CALLS
 # |     |   |            |  |   |
@@ -138,8 +139,8 @@ Events bereit. Je nach Typ können unterschiedlichste Informationen dem
 Nutzer bereitgestellt werden. In der
 \passthrough{\lstinline!ls!}-Ausgabe des
 \passthrough{\lstinline!events!}-Ordners des Debug-\gls{fs} ist zu
-sehen, welche Events abgefangen und mittels der Linux-Tracing-Tools
-protokoliert werden können.
+sehen, welche Events abgefangen und mittels der
+Linux-Tracing-Tools\ref{captools} protokoliert werden können.
 
 \begin{lstlisting}[language=bash]
 # GET AVAILABLE EVENT LIST
@@ -170,8 +171,8 @@ Alle Events sind in Gruppen gebündelt. Alle Events, welche das
 für das \passthrough{\lstinline!ext4!} zur Verfügung stehenden Events.
 Zudem befinden sich zwei zusätzliche Dateien
 \passthrough{\lstinline!enable!}, \passthrough{\lstinline!filter!}in
-diesem Ordner. Durch diese ist es später möglich anzugeben, ob dieses
-Event aufgezeichnet werden soll.
+diesem Ordner. Durch diese ist es später möglich anzugeben, ob diese
+Event-Gruppe aufgezeichnet werden soll oder nur spezifische.
 
 \begin{lstlisting}[language=bash]
 $ cd /sys/kernel/debug/tracing/events/ext4
@@ -189,12 +190,13 @@ format
 \end{lstlisting}
 
 Die optionale \passthrough{\lstinline!format!}-Datei kann zusätzliche
-Informationen durch das Event bereitgestellte Format der Ausgabe
-wiedergeben. Das folgende Beispiel zeigt das Ausgabeformat für das
-Scheduler-Wakeup \passthrough{\lstinline!sched\_wakeup!}-Event. Somit
-kann nicht nur in Erfahrung gebracht werden, wann und ob das Event
-ausgelöst hat, sondern es können auch weitere Event-Spezifische
-Informationen durch das Event gemeldet werden.
+Informationen geben, wie durch das Event bereitgestellte Daten in der
+Ausgabe zu interpretieren sind. Das folgende Beispiel zeigt das
+Ausgabeformat für das Scheduler-Wakeup
+\passthrough{\lstinline!sched\_wakeup!}-Event. Somit kann nicht nur in
+Erfahrung gebracht werden, wann und ob das Event ausgelöst hat, sondern
+es können auch weitere Event-Spezifische Informationen durch das Event
+gemeldet werden.
 
 \begin{lstlisting}[language=bash]
 $  cat /sys/kernel/debug/tracing/events/sched/sched_wakeup/format
@@ -217,7 +219,7 @@ format:
 Um ein \passthrough{\lstinline!event!}\cite{events} abfangen zu
 können, muss dies zuerst für die gewünschten Events aktiviert werden.
 Hierzu werden die Event-Interface-Dateien verwendet, welche sich in
-jeder Event-Gruppe befinden. Die simpelste Methode ist es, eine
+jeder Event-Gruppe befinden. Die einfachste Methode ist es, eine
 \passthrough{\lstinline!1!} oder \passthrough{\lstinline!0!} in die
 \passthrough{\lstinline!enable!}-Datei der Gruppe zu schreiben. Ein
 spezifisches Event kann mit der gleichen Methode aktiviert werden.
@@ -234,11 +236,13 @@ $ echo 0 > ./enable
 # ENBABLE SPECIFIC EVENT
 $ echo 1 > ./ext4_readpage/enable
 $ echo 1 > ./ext4_writepage/enable
+# GET EVENT LOG
+$ cat /sys/kernel/debug/tracing/trace
 \end{lstlisting}
 
 Nach dem Aktivieren der Events, können diese z.B.
 \passthrough{\lstinline!Trace-Log!} Aufgezeichnet oder anderweitig
-ausgegeben werden.
+verarbeitet werden.
 
 \hypertarget{probes}{%
 \section{Probes}\label{probes}}
@@ -249,16 +253,16 @@ ausgegeben werden.
 \passthrough{\lstinline!kprobes!}\cite{kprobes} können dazu
 verwendet werden, Laufzeit und Performance-Daten des Kernels zu sammeln.
 Der Vorteil dieser ist, dass Daten ohne Unterbrechung der Ausführung auf
-CPU-Instruktions-Ebene aggregiert werden können, anders als bei dem
-Debuggen eines Programms mittels Breakpoints. Ein weiterer Vorteil ist,
-dass das Registrieren der Kprobes dynamisch zur Laufzeit und ohne
-Änderungen des Programmcodes geschieht. Somit ist es möglich, zu
-verschiedenen Laufzeiten des zu analysierenden Systems oder Programms,
-Daten zu verschiedenen Laufzeiten gezielt sammeln zu können.
-
-Der \passthrough{\lstinline!kretprobes!}\cite{kretprobes} ermöglicht
-uns auf den Rückgabewert jeder Kernel- oder Modulfunktion zuzugreifen!
-Die Möglichkeit, den Rückgabewert einer bestimmten Funktion dynamisch
+Prozessor-Instruktions-Ebene aggregiert werden können, anders als bei
+dem Debuggen eines Programms mittels Breakpoints. Ein weiterer Vorteil
+ist, dass das Registrieren der \passthrough{\lstinline!kprobes!}
+dynamisch zur Laufzeit und ohne Änderungen des Programmcodes geschieht.
+Somit ist es möglich, zu verschiedenen Laufzeiten des zu analysierenden
+Systems oder Programms, Daten zu verschiedenen Laufzeiten gezielt
+sammeln zu können. Die
+\passthrough{\lstinline!kretprobes!}\cite{kretprobes} ermöglichen es
+auf den Rückgabewert jeder Kernel- oder Modulfunktion zuzugreifen. Die
+Möglichkeit, den Rückgabewert einer bestimmten Funktion dynamisch
 nachzuschlagen, kann in einem Debug-Szenario ein entscheidender Vorteil
 sein.
 
@@ -266,10 +270,12 @@ sein.
 \subsection{User-Level-Probes}\label{user-level-probes}}
 
 Eine Weiterentwicklung zu den \passthrough{\lstinline!kprobes!} sind die
-\passthrough{\lstinline!uprobes!}. Mit diesem können zur Laufzeit Events
-in eine Applikation eingebunden werden. Wenn ein
-\passthrough{\lstinline!uprobes!} hinzugefügt werden soll, muss davor
-noch was gemacht werden.
+\passthrough{\lstinline!uprobes!}\cite{uprobes}. Mit diesen können
+zur Laufzeit Events in einer Applikation an Instruktionen registriert
+werden. Diese können zum Beispiel beim Aufruf von Funktionen oder
+Instruktionen in einem Programm registriert werden. Wenn das Programm
+ausgeführt wird, wird im Trace-Log mittels der zuvor registrierten
+\passthrough{\lstinline!uprobes!}, jeder Aufruf festgehalten.
 
 \begin{lstlisting}[language={C++}]
 //test.c
@@ -286,7 +292,7 @@ int main(void)
 Bei der Nutzung von \passthrough{\lstinline!kprobes!} kann ein einfacher
 Symbolnamen spezifiziert werden. Aufgrund der Tastsache, dass alle
 Applikationen ihren eigenen virtuellen Adressraum besitzen, haben diese
-auch einen anderen Adressbasis. Beim Erzeugen eines
+auch eine andere Adressbasis. Beim Erzeugen eines
 \passthrough{\lstinline!uprobes!} wird das Adressoffset im Textsegment
 der jeweiligen Applikation benötigt. Der obere C++-Code, stellt ein
 einfaches Beispiel dar, indem die
@@ -294,18 +300,18 @@ einfaches Beispiel dar, indem die
 \passthrough{\lstinline!uprobe!} aufgezeichnet werden soll. Der
 Adressoffset kann mittels \passthrough{\lstinline!objdump!} und dem Pfad
 des zu analysierenden Programms. Danach kann die
-\passthrough{\lstinline!uprobe!} im Debuf-\gls{fs} registriert werden
+\passthrough{\lstinline!uprobe!} im Debug-\gls{fs} registriert werden
 unter Angabe des Offsets. Als letzter Schritt, muss das neu erstellte
 \passthrough{\lstinline!uprobe!}-Event noch aktiviert werden und die
 Aufzeichnung oder Ausgabe der \passthrough{\lstinline!uprobe!}.
 
 \begin{lstlisting}[language=bash]
-# CREATE EXECUTE OBJECT
+# BUILD APPLICATION
 $ gcc ./test.c -o ./tmp/test
 # GET OFFSET
 $ objdump -F -S -D ./test | less | grep main
 0000000000001149 <main> (File Offset: 0x1149):
-# REGISTER A uprobe_event
+# REGISTER uprobe_event
 $ echo "p:my_uprobe /tmp/test:0x1149" > /sys/kernel/debug/tracing/uprobe_events
 # ACTIVATE UPROBE EVENTS
 $ echo 1 > /sys/kernel/tracing/events/uprobes/enable
@@ -318,7 +324,7 @@ $ cat /sys/kernel/debug/tracing/trace
 # tracer: nop
 # TASK-PID  CPU#  TIMESTAMP  FUNCTION
 #  |   |     |        |         |
-test-24842 [006] 258544.995456: printf: [...]
+test-24842 [012] 258544.995456: printf: [...]
 [...]
 \end{lstlisting}
 
@@ -348,7 +354,7 @@ Somit kann Bandbreite und Speicherplatz verringert werden, welche die zu
 analysierende Anwendung ggf. selbst benötigt.
 
 \hypertarget{tools}{%
-\chapter{Tools}\label{tools}}
+\chapter{\texorpdfstring{Tools\label{captools}}{Tools}}\label{tools}}
 
 Allgemein sind keine speziellen Programme notwendig, um die
 Laufzeiteigenschaften eines Programms aufzuzeichnen. Der Linux-Kernel
@@ -372,8 +378,10 @@ Das Aufzeichnen in den Ringpuffer ist standardmäßig aktiviert. Kann aber
 bei Bedarf deaktiviert werden.
 
 \begin{lstlisting}[language=bash]
-$ echo 1 > Tracing on
-$ echo 0 > Tracing on
+# ENABLE TRACING
+$ echo 1 > tracing_on
+# DISBALE TRACING
+$ echo 0 > tracing_on
 \end{lstlisting}
 
 Mit dem folgenden Befehl kann der Inhalt des Ringbuffers auch während
@@ -384,31 +392,31 @@ welche sich auch auf kleinen Systemen befinden, sind
 ausreichend.\ref{trace-log}
 
 \begin{lstlisting}[language=bash]
-$ less /sys/kernel/Tracing/trace
+# GET LAST TRACELOG EVENTS
+$ less /sys/kernel/tracing/trace
 \end{lstlisting}
 
 Das Lesen während einer Aufzeichnung mittels Trace hat keinerlei
-Einfluss auf den Inhalt des Ringbuffers.
-
-Die bisherigen Aufzeichnungen der Ereignisse können mit dem Leeren der
-\passthrough{\lstinline!trace!}-Datei entfernt werden:
+Einfluss auf den Inhalt des Ringbuffers. Die bisherigen Aufzeichnungen
+der Ereignisse können mit dem Leeren der
+\passthrough{\lstinline!trace!}-Datei entfernt werden.
 
 \begin{lstlisting}[language=bash]
-$ echo ''> trace
+# EMPTY TRACELOG
+$ echo '' > trace
 \end{lstlisting}
 
 Um einen Überlauf an Informationen zu verhindern kann die Aufzeichnung
 auch konsumierend gelesen werden. Somit werden beim Lesen zeitgleich
-diese aus dem Ringbuffer entfernt.
-
-Ein weiterer Kernpunkt ist, dass in Mehrkernsystemen für jeden einzelnen
-Core ein separater Ringbuffer existiert. Damit die Analyse von
-verschiedenen Events getrennt werden kann, kann mit jeder weiteren
-Instanz pro Core ein weiterer Ringbuffer angelegt werden. Dies erfolgt
-im Untervereziechnis \passthrough{\lstinline!instances/!}. Das
-Debug-\gls{fs} legt nach dem Anlegen des Ordners, die benötigten Dateien
-wie die \passthrough{\lstinline!trace!}-Datei automatisch an. Alle
-weiteren Operationen können dann auch auf dieser ausgeführt werden.
+diese aus dem Ringbuffer entfernt. Ein weiterer Kernpunkt ist, dass in
+Mehrkernsystemen für jeden einzelnen Core ein separater Ringbuffer
+existiert. Damit die Analyse von verschiedenen Events getrennt werden
+kann, kann mit jeder weiteren Instanz pro Core ein weiterer Ringbuffer
+angelegt werden. Dies erfolgt im Untervereziechnis
+\passthrough{\lstinline!instances/!}. Das Debug-\gls{fs} legt nach dem
+Anlegen des Ordners, die benötigten Dateien wie die
+\passthrough{\lstinline!trace!}-Datei automatisch an. Alle weiteren
+Operationen können dann auch auf dieser ausgeführt werden.
 
 \begin{lstlisting}[language=bash]
 $ cd  /sys/kernel/tracing/instances
@@ -428,16 +436,14 @@ $ mkdir ./inst1
 Das Tool \passthrough{\lstinline!trace-cmd!}\cite{trace-cmd} ist das
 bekannteste und meistgenutzte Hilfsmittel zur Aufzeichnung. Dies ist ein
 Kommandozeilenwerkzeug, das auf den meisten gängigen
-Linux-Distributionen bereits vorinstalliert ist.
-
-Mit dem letzten Befehl werden alle Events vom Scheduler aufgezeichnet.
-Dabei werden während der Aufzeichnung kontinuierlich die Ringbuffer in
-konsumierender Form ausgelesen und in die Datei
-\passthrough{\lstinline!trace.dat!} geschrieben, falls mit dem
-\passthrough{\lstinline!-o!} keine eigene Datei eingegeben wurde. Als
-Informationen werden zu dem Inhalt des Ringbuffers auch zusätzlich
-notwendige Informationen über das Target, für die Auswertung auf
-beliebigen Systemen gespeichert.
+Linux-Distributionen bereits vorinstalliert ist. Mit dem letzten Befehl
+werden alle Events vom Scheduler aufgezeichnet. Dabei werden während der
+Aufzeichnung kontinuierlich die Ringbuffer in konsumierender Form
+ausgelesen und in die Datei \passthrough{\lstinline!trace.dat!}
+geschrieben, falls mit dem \passthrough{\lstinline!-o!} keine eigene
+Datei eingegeben wurde. Als Informationen werden zu dem Inhalt des
+Ringbuffers auch zusätzlich notwendige Informationen über das Target,
+für die Auswertung auf beliebigen Systemen gespeichert.
 
 \begin{lstlisting}[language=bash]
 # CHECK IF TRACING IS ENABLED
@@ -462,7 +468,7 @@ erfolgt mit dem Befehl
 \passthrough{\lstinline!trace-cmd report [-i <Dateiname>]!} als Tabelle
 in der Konsole und ist somit rein Textbasiert\ref{trace-cmd-report}. Auf
 Aufzeichnungen können zusätzliche Filter angewendet werden, um die Suche
-auf bestimmten Ereignissen einzugrenzen. Mit dem Tool ist es einfach die
+auf bestimmten Ereignissen einzugrenzen. Mit dem Tool ist es einfach
 Teilschritte zu automatisieren.
 
 \hypertarget{bpftrace}{%
@@ -497,23 +503,22 @@ erwähnt nur ein textbasiertes Analysetool. Kernelshark Tool bietet dem
 Anwender die Möglichkeit, die Trace-Aufzeichnungen grafisch zu
 analysieren. Dabei sind die beiden Tools aufeinander abgestimmt und
 werden gemeinsam entwickelt. Auch dieses Tool ist in den meisten Linux
-Distributionen vorinstalliert.
-
-Das vom trace-cmd erzeugte \passthrough{\lstinline!trace.dat-Format!}
-wird im Kernelshark als Eingabe erwartet. Wenn im folgendem ersten
-Befehl nichts eingegeben, dann wird nach der entsprechenden
-\passthrough{\lstinline!trace.dat!} im Verzeichnis gesucht.
+Distributionen vorinstalliert. Das vom trace-cmd erzeugte
+\passthrough{\lstinline!trace.dat!}-Format wird im Kernelshark als
+Eingabe erwartet. Wenn im folgendem ersten Befehl nichts eingegeben,
+dann wird nach der entsprechenden \passthrough{\lstinline!trace.dat!} im
+aktuellen Verzeichnis gesucht.
 
 \begin{lstlisting}[language=bash]
 # OPEN KERNELSHARK WITH trace.dat
 $ kernelshark
 # OPEN KERNELSHAR WITH SPECIFIED TRACELOG
-$ kernelshark -i <Dateiname>
+$ kernelshark -i other_trace.dat
 \end{lstlisting}
 
 Im Folgenden ist die grafische Darstellung\ref{kernelshark} zu sehen.
-Dabei besitzt jeder Task einen eigenen Farbton. Für jede CPU wird eine
-eigene Zeile dargestellt.
+Dabei besitzt jeder Task einen eigenen Farbton. Für jeden Prozessorkern
+wird eine eigene Zeile dargestellt.
 
 \begin{figure}
 \centering
@@ -531,7 +536,8 @@ analysiert werden, wie das System auf eine unerwartet große Menge an
 \gls{tcp}-Paketen reagiert. Dies kann zum Beispiel bei
 \gls{iot}-Anwendungen der Fall sein, bei denen das \gls{mqtt}-Protokoll
 verwendet wird. Hierbei können viele kleine Netzwerkpakete von
-\gls{iot}-Sensoren einen starken Traffics am Server zur Folge haben.
+\gls{iot}-Sensoren einen starken Traffic am Server bzw \gls{mqtt}-Broker
+zur Folge haben.
 
 \hypertarget{bpftrace-installation}{%
 \section{bpftrace Installation}\label{bpftrace-installation}}
@@ -586,7 +592,7 @@ kprobe:tcp_drop
 
 Um eine Lastspitze auf dem System zu erzeugen, wurde das
 Netzwerkbenchmark-Tool \passthrough{\lstinline!ntttcp!}\cite{ntttcp}
-verwendet. Mit diesem ist es möglich, UDP und \gls{tcp} Pakete mit
+verwendet. Mit diesem ist es möglich, \gls{udp} und \gls{tcp} Pakete mit
 verschiedenen Paketgrößen zu generieren. Hierzu werden zwei Instanzen
 benötigt, der Server und der Client, welche auf dem gleichen System aber
 auch auf verschiedenen Systemen ausgeführt werden können.
@@ -601,13 +607,11 @@ vom Sender gesendeten Pakete. Im zweiten Schritt wurde der
 gestartet. Hier wurde mittels \passthrough{\lstinline!-t!} Parameter die
 Laufzeit auf unendlich gestellt, somit werden durchgehend Pakete an den
 Server gesendet. Die Paketgröße wurde hier auf
-\passthrough{\lstinline!4096Kbyte!} gestellt umso eine Fragmentierung
-des \gls{tcp}-Paketes bei einer MTU von
-\passthrough{\lstinline!1500byte!} zu erzwingen.
-
-Im Anschluss wurde \passthrough{\lstinline!bpftrace!} gestartet, welches
-die Events als Logdatei \passthrough{\lstinline!tcpdrop\_log!} in einem
-lesbaren Textformat ausgeben soll.
+\passthrough{\lstinline!16Byte!} gestellt um somit viele kleine Pakete
+in kurzer Zeit erzeugen zu können. Im Anschluss wurde
+\passthrough{\lstinline!bpftrace!} gestartet, welches die Events als
+Logdatei \passthrough{\lstinline!tcpdrop\_log!} in einem lesbaren
+Textformat ausgeben soll.
 
 \begin{lstlisting}[language=bash]
 # START SERVER
@@ -636,9 +640,9 @@ NTTTCP for Linux 1.4.0
 21:28:52 INFO: Network activity progressing...
 \end{lstlisting}
 
-Nach einigen Sekunden wurde \passthrough{\lstinline!ntttcp!} und
+Nach einiger Zeit wurde \passthrough{\lstinline!ntttcp!} und
 \passthrough{\lstinline!bpftrace!} die Aufzeichnung manuell gestoppt.
-Das aufgezeichnete Trace für das
+Das aufgezeichnete Trace-Log für das
 \passthrough{\lstinline!tcp\_drop!}-Event befindet sich in der
 \passthrough{\lstinline!tcpdrop\_log!} Datei.
 
@@ -649,11 +653,11 @@ Die Ausgabe der Logdatei stellt Textbasiert nicht nur dar, ob ein
 \gls{tcp}-Paket verloren wurde, sondern gibt auch zusätzliche
 Informationen aus. Jeder Event-Trigger des
 \passthrough{\lstinline!tcp\_drop()!} Events wird dabei mit der
-Systemzeit, Prozess-ID und dem Programm eingeleitet unter welches das
-Event ausgelöst hat. In diesem Fall wurde der Paketverlust durch ein
+Systemzeit, Prozess-\gls{id} und dem Programm eingeleitet unter welches
+das Event ausgelöst hat. In diesem Fall wurde der Paketverlust durch ein
 Empfangenes Paket der \passthrough{\lstinline!ntttcp!}-Anwendung
-ausgelöst. Die Senderichtung des Pakets kann anhand der Quell- und
-Empfangs-IP-Adresse ermittelt werden. Danach folgt der
+ausgelöst. Die Senderichtung des Pakets kann anhand der Quell und
+Empfangs \gls{ip}-Adresse ermittelt werden. Danach folgt der
 Kernel-Stacktrace, in welchem der Funktionsaufruf-Verlauf bis zum
 Auslösen des überwachten Events aufgeführt ist.
 
@@ -684,7 +688,8 @@ $ cat ~/tcpdrop_log
 \end{lstlisting}
 
 Somit ist aus den Logs zu entnehmen, dass unter den getesteten
-Bedingungen auf dem System \gls{tcp}-Pakete verloren gingen, eine
+Bedingungen auf dem System \gls{tcp}-Pakete verloren gingen. Diese
+traten zudem vermehrt aus, je länger das System getestet wurde. Eine
 tiefergehende Untersuchung des Kernel-Stacktrace kann hierzu genauere
 Informationen bereitstellen. Das Beispiel zeigt auch, dass nicht nur das
 Auslösen von Events protokolliert werden kann, sondern auch mittels
@@ -713,13 +718,10 @@ somit kann kein Logic-Analyzer verwendet werden.
 \hypertarget{aufzeichnung-trace-log-1}{%
 \section{Aufzeichnung Trace-Log}\label{aufzeichnung-trace-log-1}}
 
-Zur Aufzeichnung des Trace-Logs wurde
-\passthrough{\lstinline!trace-cmd!}\cite{trace-cmd} verwendet. Auf
-dem Zielsystem wurde dabei nur die Aufzeichnung vorgenommen und die
+Auf dem Zielsystem wurde dabei nur die Aufzeichnung vorgenommen und die
 Analyse der Logs erfolgte auf einem seperaten System. Für den Test wird
 zuerst die \passthrough{\lstinline!Tracing!}-Funktionalität aktiviert
-und alle \passthrough{\lstinline!sched!} und
-\passthrough{\lstinline!gpio!}-Events aktiviert.
+und alle \passthrough{\lstinline!i2c!}-Events aktiviert.
 
 \begin{lstlisting}[language=bash]
 # DANGER: RUN ALL NEXT COMMANDS AS ROOT
@@ -787,6 +789,7 @@ Ausgabe zeigt, dass am System nur ein \gls{i2c}-Slave mit der Adresse
 Ausgabe im Trace-Log übereinstimmt.
 
 \begin{lstlisting}[language=bash]
+# SCAN FOR I2C BUS CLIENTS
 $ i2cdetect -y 1
      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
 00:                         -- -- -- -- -- -- -- -- 
@@ -794,12 +797,12 @@ $ i2cdetect -y 1
 20: 20 -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 \end{lstlisting}
 
-Anhand der I2C-Adresse und der einfachheit der gesendeten Daten, kann
-auf einen \passthrough{\lstinline!PCF8574!} Port-Expander-IC geschlossen
-werden. Dieser nimmt jeweils an Adresse \passthrough{\lstinline!0x20!}
-ein Byte entgegen und schaltet somit die jeweiligen Ausgangspins. Der
-Quellcode bestätigt diese Erkenntnisse ebenfalls. Die in Python
-geschriebene ``Black-Box'' verwendet das
+Anhand der \gls{i2c}-Adresse und der einfachheit der gesendeten Daten,
+kann auf einen \passthrough{\lstinline!PCF8574!} Port-Expander-\gls{ic}
+geschlossen werden. Dieser nimmt jeweils an Adresse
+\passthrough{\lstinline!0x20!} ein Byte entgegen und schaltet somit die
+jeweiligen Ausgangspins. Der Quellcode bestätigt diese Erkenntnisse
+ebenfalls. Die in Python geschriebene ``Black-Box'' verwendet das
 \passthrough{\lstinline!smbus!}-Modul um auf den \gls{i2c}-Bus-1
 zuzugreifen und sendet in einer Dauerschleife jeweils ein Byte.
 

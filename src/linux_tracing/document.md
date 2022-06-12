@@ -4,22 +4,25 @@ Tracing ist die spezielle Verwendung der Protokollierung zur Aufzeichnung von In
 Oft werden mit eigenständig hinzugefügten Print-Messages der Code um Debug-Ausgaben erweitert.
 Somit verfolgt man die Anweisungen mit einem eigenen Tracing-System.
 
-Linux bietet einige eigenständige Tools, welche ermöglichen, Vorgänge innerhalb von einem Linux-System nachzuvollziehen und analysieren zu können.
+Linux bietet einige eigenständige Tools, welche ermöglichen, Vorgänge innerhalb eines Linux-Systems nachzuvollziehen und analysieren zu können.
 Die Linux-Tracing Funktionalität und die zur Verfügung stehenden Tools helfen so bei der Identifikation von Laufzeiten, Nebenläufigkeiten und der Untersuchung von Latenzproblemen. Hierzu sind bereits alle nötigen Tools und Funktionalitäten im Linux-Kernel integriert. [@dbgfs]
 
 ## Relevanz
 
 Bei Mikrokontrollern und auch im Zusammenhang mit Echtzeit-Betriebssystemen ist jede Aktion, die Ausgeführt wird, von hoher Bedeutung. Moderne Linux Systeme sind sehr komplex und bestehen aus vielen Softwaremodulen, welche auf unterschiedlichsten Weisen untereinander interagieren.
-Um diese Interaktionen nachzuvollziehen können und um zu verstehen, wie sich Softwarekomponenten im Verbund verhalten, ist es wichtig, das System systemnah zu debuggen, um diese analysieren zu können. Oft können Fehler reproduziert und mit solchen Analysen identifiziert werden. Zusätzlich besteht bei Custom-Driver die Möglichkeit während des Bootvorgangs zu debuggen. 
+Um diese Interaktionen nachzuvollziehen können und um zu verstehen, wie sich Softwarekomponenten im Verbund verhalten, ist es wichtig, das System systemnah zu debuggen, um diese analysieren zu können. Oft können Fehler reproduziert und mit solchen Analysen identifiziert werden.
+Zusätzlich besteht auch die Möglichkeit während des Bootvorgangs zu debuggen, dies kann zum Beispiel bei Kernel-Modulen hilfreich sein.
 
 # Grundlagen
 
 Um die Tracing-Funktionalität auf einem Linux-System verwenden zu können, muss das System für deren Verwendung vorbereitet werden.
-Hierzu muss unter anderem das Debug-(+fs) auf dem Ziel-System aktiviert werden und die entsprechende Art des zu Tracings entsprechend der Anwendung gewählt werden.
+Hierzu muss unter anderem das Debug-(+fs) auf dem Ziel-System aktiviert werden und die entsprechende Art des Tracings entsprechend der Anwendung gewählt werden.
 
 ## Ringbuffer
 
-Bei einem Ringbuffer handelt sich um eine Datenstruktur, die das asynchrone Lesen und Schreiben von Informationen erleichtert. Der Puffer wird in der Regel als Array mit zwei Zeigern implementiert. Einem Lesezeiger und einem Schreibzeiger. Man liest aus dem Puffer, indem man den Inhalt des Lesezeigers liest und dann den Zeiger auf das nächste Element erhöht und ebenso beim Schreiben in den Puffer mit dem Schreibzeiger.
+Bei einem Ringbuffer handelt sich um eine Datenstruktur, die das asynchrone Lesen und Schreiben von Informationen erleichtert und ist die Basis für das Debug-(+fs)
+Der Puffer wird in der Regel als Array mit zwei Zeigern implementiert. Einem Lesezeiger und einem Schreibzeiger.
+Man liest aus dem Puffer, indem man den Inhalt des Lesezeigers liest und dann den Zeiger auf das nächste Element erhöht und ebenso beim Schreiben in den Puffer mit dem Schreibzeiger.
 So werden in der eingesetzten Ringbuffer-Implementierung die Debug-Informationen gespeichert und ein Auslesen dieser ist mittels der Einträge im Debug-(+fs) möglich.
 
 ## Debug-Filesystem
@@ -32,6 +35,7 @@ Um das Dateisystem nutzen zu können, muss dies zuerst aktiviert werden. Nach de
 ```bash
 # ENABLE DEBUG FS
 $ sudo mount -t debugfs debugfs /sys/kernel/debug
+# PRINT FOLDERS OF DEBUG FS
 $ ls -lah /sys/kernel/debug | awk '{print $9}'
 hid
 usb 
@@ -43,7 +47,7 @@ Tracing
 
 Durch das Debug-(+fs) ist der Zugriff auf die Debug und insbesondere auf die Tracing-Daten möglich.
 Im Debug-(+fs) ist nach der Aktivierung die `Tracing`-Ordnerstruktur vorhanden.
-In diesem werden verfügbaren Events in gruppiert in Ordnern dargestellt, auf welche im späteren Verlauf reagiert werden kann.
+In diesem werden verfügbaren Events in gruppiert in Ordnern dargestellt, auf welche im späteren Verlauf reagiert und aufgezeichnet werden können.
 Zudem können hier auch die Verfügbaren `tracer` angezeigt und aktiviert werden, welche noch weitere Debugging-Optionen bereitstellen.
 
 
@@ -62,9 +66,9 @@ $ echo nop > /sys/kernel/debug/tracing/current_tracer
 `tracer` sind zusätzliche Tracing-Tools, welche eine gezieltere Aggregierung von Events z.B. Filterung und somit tiefergehende Analyse erlauben.
 Zum Beispiel erlaubt der `ftrace`-Tracer eine detaillierte Ereignis-Filterung auf spezifizierte Events[@ftraceintroducation].
 
-Der `function_graph`-Tracer gibt bei Verwendung zusätzliche Informationen, wie z.B. die Laufzeit von einzelnen Funktionen[@fgtrace].
+Der `function_graph`-Tracer gibt bei Verwendung zusätzliche Informationen, wie z.B. die Laufzeit von einzelnen Funktionen[@fgtrace] aus.
 
-Auch kann dieser den Stacktrace und den Call-Stack übersichtlich darstellen, indem hier die Namen der aufgerufenen Funktionen ausgegeben werden. 
+Auch kann dieser den Stacktrace und den Call-Stack übersichtlich darstellen, indem hier zusätzlich die Namen der aufgerufenen Funktionen ausgegeben werden. 
 
 ```bash
 # CALL STACK USING FUNCTION_GRAPH TRACER
@@ -82,8 +86,9 @@ $ cat /sys/kernel/debug/tracing/trace
 
 ### Events
 
-Ein Event kann zum Beispiel durch das Lesen und Schreiben auf den System (+i2c)-Bus vom Kernel ausgelöst werden. Wenn das Event im Debug-(+fs) aktiviert wurde, stellt dieses die Informationen des Events bereit. Je nach Typ können unterschiedlichste Informationen dem Nutzer bereitgestellt werden.
-In der `ls`-Ausgabe des `events`-Ordners des Debug-(+fs) ist zu sehen, welche Events abgefangen und mittels der Linux-Tracing-Tools protokoliert werden können.
+Ein Event kann zum Beispiel durch das Lesen und Schreiben auf den System (+i2c)-Bus vom Kernel ausgelöst werden. Wenn das Event im Debug-(+fs) aktiviert wurde, stellt dieses die Informationen des Events bereit.
+Je nach Typ können unterschiedlichste Informationen dem Nutzer bereitgestellt werden.
+In der `ls`-Ausgabe des `events`-Ordners des Debug-(+fs) ist zu sehen, welche Events abgefangen und mittels der Linux-Tracing-Tools\ref{captools} protokoliert werden können.
 
 ```bash
 # GET AVAILABLE EVENT LIST
@@ -111,7 +116,7 @@ timer #TIMER_STOP, TIMER_INIT, TIMER_EXPIRED
 Alle Events sind in Gruppen gebündelt. Alle Events, welche das `ext4`-(+fs) betreffen, befinden sich im `ext4`-Ordner.
 Die Auflistung zeigt einige der für das `ext4` zur Verfügung stehenden Events.
 Zudem befinden sich zwei zusätzliche Dateien `enable`, `filter `in diesem Ordner.
-Durch diese ist es später möglich anzugeben, ob dieses Event aufgezeichnet werden soll.
+Durch diese ist es später möglich anzugeben, ob diese Event-Gruppe aufgezeichnet werden soll oder nur spezifische.
 
 ```bash
 $ cd /sys/kernel/debug/tracing/events/ext4
@@ -128,7 +133,7 @@ filter
 format
 ```
 
-Die optionale `format`-Datei kann zusätzliche Informationen durch das Event bereitgestellte Format der Ausgabe wiedergeben.
+Die optionale `format`-Datei kann zusätzliche Informationen geben, wie durch das Event bereitgestellte Daten in der Ausgabe zu interpretieren sind.
 Das folgende Beispiel zeigt das Ausgabeformat für das Scheduler-Wakeup `sched_wakeup`-Event.
 Somit kann nicht nur in Erfahrung gebracht werden, wann und ob das Event ausgelöst hat, sondern es können auch weitere Event-Spezifische Informationen durch das Event gemeldet werden.
 
@@ -153,7 +158,7 @@ format:
 
 Um ein `event`[@events] abfangen zu können, muss dies zuerst für die gewünschten Events aktiviert werden.
 Hierzu werden die Event-Interface-Dateien verwendet, welche sich in jeder Event-Gruppe befinden.
-Die simpelste Methode ist es, eine `1` oder `0` in die `enable`-Datei der Gruppe zu schreiben.
+Die einfachste Methode ist es, eine `1` oder `0` in die `enable`-Datei der Gruppe zu schreiben.
 Ein spezifisches Event kann mit der gleichen Methode aktiviert werden. Hierzu wird die `enable`-Datei im eigentlichen Event-Ordner verwendet anstatt jene, welche sich in der Event-Gruppe befindet.
 
 
@@ -166,9 +171,11 @@ $ echo 0 > ./enable
 # ENBABLE SPECIFIC EVENT
 $ echo 1 > ./ext4_readpage/enable
 $ echo 1 > ./ext4_writepage/enable
+# GET EVENT LOG
+$ cat /sys/kernel/debug/tracing/trace
 ```
 
-Nach dem Aktivieren der Events, können diese z.B. `Trace-Log` Aufgezeichnet oder anderweitig ausgegeben werden.
+Nach dem Aktivieren der Events, können diese z.B. `Trace-Log` Aufgezeichnet oder anderweitig verarbeitet werden.
 
 
 
@@ -182,13 +189,15 @@ Nach dem Aktivieren der Events, können diese z.B. `Trace-Log` Aufgezeichnet ode
 Der Vorteil dieser ist, dass Daten ohne Unterbrechung der Ausführung auf Prozessor-Instruktions-Ebene aggregiert werden können, anders als bei dem Debuggen eines Programms mittels Breakpoints.
 Ein weiterer Vorteil ist, dass das Registrieren der `kprobes` dynamisch zur Laufzeit und ohne Änderungen des Programmcodes geschieht.
 Somit ist es möglich, zu verschiedenen Laufzeiten des zu analysierenden Systems oder Programms, Daten zu verschiedenen Laufzeiten gezielt sammeln zu können.
-
-Der `kretprobes`[@kretprobes] ermöglicht uns auf den Rückgabewert jeder Kernel- oder Modulfunktion zuzugreifen! Die Möglichkeit, den Rückgabewert einer bestimmten Funktion dynamisch nachzuschlagen, kann in einem Debug-Szenario ein entscheidender Vorteil sein.
+Die `kretprobes`[@kretprobes] ermöglichen es auf den Rückgabewert jeder Kernel- oder Modulfunktion zuzugreifen.
+Die Möglichkeit, den Rückgabewert einer bestimmten Funktion dynamisch nachzuschlagen, kann in einem Debug-Szenario ein entscheidender Vorteil sein.
 
 ### User-Level-Probes
 
-Eine Weiterentwicklung zu den `kprobes` sind die `uprobes`. Mit diesem können zur Laufzeit Events in eine Applikation eingebunden werden. 
-Wenn ein `uprobes` hinzugefügt werden soll, muss davor noch was gemacht werden. 
+Eine Weiterentwicklung zu den `kprobes` sind die `uprobes`[@uprobes].
+Mit diesen können zur Laufzeit Events in einer Applikation an Instruktionen registriert werden. 
+Diese können zum Beispiel beim Aufruf von Funktionen oder Instruktionen in einem Programm registriert werden.
+Wenn das Programm ausgeführt wird, wird im Trace-Log mittels der zuvor registrierten `uprobes`, jeder Aufruf festgehalten.
 
 ```c++
 //test.c
@@ -202,19 +211,20 @@ int main(void)
 }
 ```
 
-Bei der Nutzung von `kprobes` kann ein einfacher Symbolnamen spezifiziert werden. Aufgrund der Tastsache, dass alle Applikationen ihren eigenen virtuellen Adressraum besitzen, haben diese auch einen anderen Adressbasis. Beim Erzeugen eines `uprobes` wird das Adressoffset im Textsegment der jeweiligen Applikation benötigt.
+Bei der Nutzung von `kprobes` kann ein einfacher Symbolnamen spezifiziert werden. Aufgrund der Tastsache, dass alle Applikationen ihren eigenen virtuellen Adressraum besitzen, haben diese auch eine andere Adressbasis.
+Beim Erzeugen eines `uprobes` wird das Adressoffset im Textsegment der jeweiligen Applikation benötigt.
 Der obere C++-Code, stellt ein einfaches Beispiel dar, indem die `printf`-Anweisung, mittels einer `uprobe` aufgezeichnet werden soll.
 Der Adressoffset kann mittels `objdump` und dem Pfad des zu analysierenden Programms.
 Danach kann die `uprobe` im Debug-(+fs) registriert werden unter Angabe des Offsets.
 Als letzter Schritt, muss das neu erstellte `uprobe`-Event noch aktiviert werden und die Aufzeichnung oder Ausgabe der `uprobe`.
 
 ```bash
-# CREATE EXECUTE OBJECT
+# BUILD APPLICATION
 $ gcc ./test.c -o ./tmp/test
 # GET OFFSET
 $ objdump -F -S -D ./test | less | grep main
 0000000000001149 <main> (File Offset: 0x1149):
-# REGISTER A uprobe_event
+# REGISTER uprobe_event
 $ echo "p:my_uprobe /tmp/test:0x1149" > /sys/kernel/debug/tracing/uprobe_events
 # ACTIVATE UPROBE EVENTS
 $ echo 1 > /sys/kernel/tracing/events/uprobes/enable
@@ -227,7 +237,7 @@ $ cat /sys/kernel/debug/tracing/trace
 # tracer: nop
 # TASK-PID  CPU#  TIMESTAMP  FUNCTION
 #  |   |     |        |         |
-test-24842 [006] 258544.995456: printf: [...]
+test-24842 [012] 258544.995456: printf: [...]
 [...]
 ```
 
@@ -247,7 +257,7 @@ Um diese nachteiligen Effekte zu minimieren, sollte die Auswertung auf einem sep
 Vor der Aufzeichnung sollen nur die Events aktiviert werden, welche im Fokus der analyse stehen.
 Somit kann Bandbreite und Speicherplatz verringert werden, welche die zu analysierende Anwendung ggf. selbst benötigt.
 
-# Tools
+# Tools\label{captools}
 
 Allgemein sind keine speziellen Programme notwendig, um die Laufzeiteigenschaften eines Programms aufzuzeichnen.
 Der Linux-Kernel bringt bereits alle nötigen Funktionalitäten mit, jedoch gibt es Tools, welche eine visuelle Darstellung der aufgezeichneten Events ermöglichen.
@@ -270,9 +280,11 @@ $ echo 0 > tracing_on
 ```
 
 Mit dem folgenden Befehl kann der Inhalt des Ringbuffers auch während einer Aufzeichnung, ausgebeben werden.
-Somit sind im Allgemeinen keine besonderen Tools notwendig. Anwendungen zum Ausgeben von Dateien wie z.B.`cat` oder `less`, welche sich auch auf kleinen Systemen befinden, sind ausreichend.\ref{trace-log} 
+Somit sind im Allgemeinen keine besonderen Tools notwendig.
+Anwendungen zum Ausgeben von Dateien wie z.B.`cat` oder `less`, welche sich auch auf kleinen Systemen befinden, sind ausreichend.\ref{trace-log} 
 
 ```bash
+# GET LAST TRACELOG EVENTS
 $ less /sys/kernel/tracing/trace
 ```
 
@@ -284,10 +296,8 @@ Die bisherigen Aufzeichnungen der Ereignisse können mit dem Leeren der `trace`-
 $ echo '' > trace
 ```
 Um einen Überlauf an Informationen zu verhindern kann die Aufzeichnung auch konsumierend gelesen werden. Somit werden beim Lesen zeitgleich diese aus dem Ringbuffer entfernt.
-
-
-
-Ein weiterer Kernpunkt ist, dass in Mehrkernsystemen für jeden einzelnen Core ein separater Ringbuffer existiert. Damit die Analyse von verschiedenen Events getrennt werden kann, kann mit jeder weiteren Instanz pro Core ein weiterer Ringbuffer angelegt werden. Dies erfolgt im Untervereziechnis `instances/`.
+Ein weiterer Kernpunkt ist, dass in Mehrkernsystemen für jeden einzelnen Core ein separater Ringbuffer existiert. Damit die Analyse von verschiedenen Events getrennt werden kann, kann mit jeder weiteren Instanz pro Core ein weiterer Ringbuffer angelegt werden.
+Dies erfolgt im Untervereziechnis `instances/`.
 Das Debug-(+fs) legt nach dem Anlegen des Ordners, die benötigten Dateien wie die `trace`-Datei automatisch an. Alle weiteren Operationen können dann auch auf dieser ausgeführt werden.
 
 ```bash
@@ -303,8 +313,8 @@ $ mkdir ./inst1
 ![trace-cmd Report \label{trace-cmd-report}](images/trace-cmd.png)
 
 Das Tool `trace-cmd`[@trace-cmd] ist das bekannteste und meistgenutzte Hilfsmittel zur Aufzeichnung. Dies ist ein Kommandozeilenwerkzeug, das auf den meisten gängigen Linux-Distributionen bereits vorinstalliert ist.
-
-Mit dem letzten Befehl werden alle Events vom Scheduler aufgezeichnet. Dabei werden während der Aufzeichnung kontinuierlich die Ringbuffer in konsumierender Form ausgelesen und in die Datei `trace.dat` geschrieben, falls mit dem `-o` keine eigene Datei eingegeben wurde. Als Informationen werden zu dem Inhalt des Ringbuffers auch zusätzlich notwendige Informationen über das Target, für die Auswertung auf beliebigen Systemen gespeichert.
+Mit dem letzten Befehl werden alle Events vom Scheduler aufgezeichnet. Dabei werden während der Aufzeichnung kontinuierlich die Ringbuffer in konsumierender Form ausgelesen und in die Datei `trace.dat` geschrieben, falls mit dem `-o` keine eigene Datei eingegeben wurde.
+Als Informationen werden zu dem Inhalt des Ringbuffers auch zusätzlich notwendige Informationen über das Target, für die Auswertung auf beliebigen Systemen gespeichert.
 
 ```bash
 # CHECK IF TRACING IS ENABLED
@@ -325,7 +335,7 @@ $ trace-cmd -t function ./program_executable
 Die `trace-cmd` Konsolenanwendung dient nicht nur zur Aufzeichnung der Trace-Events, sondern bietet auch die Möglichkeit aufgezeichnete Reports visuell darzustellen.
 Die Ausgabe erfolgt mit dem Befehl `trace-cmd report [-i <Dateiname>]` als Tabelle in der Konsole und ist somit rein Textbasiert\ref{trace-cmd-report}.
 Auf Aufzeichnungen können zusätzliche Filter angewendet werden, um die Suche auf bestimmten Ereignissen einzugrenzen.
-Mit dem Tool ist es einfach die Teilschritte zu automatisieren.
+Mit dem Tool ist es einfach Teilschritte zu automatisieren.
 
 ### bpftrace
 
@@ -352,14 +362,14 @@ $ bftrace ./biolatency.bt
 Das zuvor vorgestellte `tace-cmd` ist wie oben erwähnt nur ein textbasiertes Analysetool.
 Kernelshark Tool bietet dem Anwender die Möglichkeit, die Trace-Aufzeichnungen grafisch zu analysieren. Dabei sind die beiden Tools aufeinander abgestimmt und werden gemeinsam entwickelt.
 Auch dieses Tool ist in den meisten Linux Distributionen vorinstalliert.
-
-Das vom trace-cmd erzeugte `trace.dat`-Format wird im Kernelshark als Eingabe erwartet. Wenn im folgendem ersten Befehl nichts eingegeben, dann wird nach der entsprechenden `trace.dat` im Verzeichnis gesucht.
+Das vom trace-cmd erzeugte `trace.dat`-Format wird im Kernelshark als Eingabe erwartet.
+Wenn im folgendem ersten Befehl nichts eingegeben, dann wird nach der entsprechenden `trace.dat` im aktuellen Verzeichnis gesucht.
 
 ```bash
 # OPEN KERNELSHARK WITH trace.dat
 $ kernelshark
 # OPEN KERNELSHAR WITH SPECIFIED TRACELOG
-$ kernelshark -i <Dateiname>
+$ kernelshark -i other_trace.dat
 ```
 
 Im Folgenden ist die grafische Darstellung\ref{kernelshark} zu sehen. Dabei besitzt jeder Task einen eigenen Farbton. Für jeden Prozessorkern wird eine eigene Zeile dargestellt.
@@ -374,7 +384,7 @@ Im Folgenden ist die grafische Darstellung\ref{kernelshark} zu sehen. Dabei besi
 Dieses Beispiel zeigt, wie der Empfang von (+tcp)-Netzwerkpaketen auf Paketverlust auf einem System überprüft werden kann.
 Hierbei soll analysiert werden, wie das System auf eine unerwartet große Menge an (+tcp)-Paketen reagiert.
 Dies kann zum Beispiel bei (+iot)-Anwendungen der Fall sein, bei denen das (+mqtt)-Protokoll verwendet wird.
-Hierbei können viele kleine Netzwerkpakete von (+iot)-Sensoren einen starken Traffics am Server zur Folge haben.
+Hierbei können viele kleine Netzwerkpakete von (+iot)-Sensoren einen starken Traffic am Server bzw (+mqtt)-Broker zur Folge haben.
 
 ## bpftrace Installation
 Dabei wird auf dem zu analysierenden System `bpftrace`[@bpftrace] verwendet. Unter Debian-Systemen kann dies einfach über den APT-Package-Manager installiert werden, jedoch ist diese Version, welche in der Registry hinterlegt ist, meist nicht aktuell.
@@ -420,7 +430,8 @@ Hierzu werden zwei Instanzen benötigt, der Server und der Client, welche auf de
 ## Aufzeichnung Trace-Log
 
 Um die Messung zu starten, wurde zuerst der `ntttcp`-Server gestartet; dieser empfängt die vom Sender gesendeten Pakete.
-Im zweiten Schritt wurde der `ntttcp`-Client auf dem anderen System gestartet. Hier wurde mittels `-t` Parameter die Laufzeit auf unendlich gestellt, somit werden durchgehend Pakete an den Server gesendet. Die Paketgröße wurde hier auf `16Byte` gestellt um somit viele kleine Pakete in kurzer Zeit erzeugen zu können.
+Im zweiten Schritt wurde der `ntttcp`-Client auf dem anderen System gestartet. Hier wurde mittels `-t` Parameter die Laufzeit auf unendlich gestellt, somit werden durchgehend Pakete an den Server gesendet.
+Die Paketgröße wurde hier auf `16Byte` gestellt um somit viele kleine Pakete in kurzer Zeit erzeugen zu können.
 Im Anschluss wurde `bpftrace` gestartet, welches die Events als Logdatei `tcpdrop_log` in einem lesbaren Textformat ausgeben soll.
 
 ```bash
@@ -450,12 +461,14 @@ NTTTCP for Linux 1.4.0
 21:28:52 INFO: Network activity progressing...
 ```
 
-Nach einigen Sekunden wurde `ntttcp` und `bpftrace` die Aufzeichnung manuell gestoppt.
-Das aufgezeichnete Trace für das `tcp_drop`-Event befindet sich in der `tcpdrop_log` Datei.
+Nach einiger Zeit wurde `ntttcp` und `bpftrace` die Aufzeichnung manuell gestoppt.
+Das aufgezeichnete Trace-Log für das `tcp_drop`-Event befindet sich in der `tcpdrop_log` Datei.
 
 ## Ausgabe
 
-Die Ausgabe der Logdatei stellt Textbasiert nicht nur dar, ob ein (+tcp)-Paket verloren wurde, sondern gibt auch zusätzliche Informationen aus. Jeder Event-Trigger des `tcp_drop()` Events wird dabei mit der Systemzeit, Prozess-(+id) und dem Programm eingeleitet unter welches das Event ausgelöst hat. In diesem Fall wurde der Paketverlust durch ein Empfangenes Paket der `ntttcp`-Anwendung ausgelöst.
+Die Ausgabe der Logdatei stellt Textbasiert nicht nur dar, ob ein (+tcp)-Paket verloren wurde, sondern gibt auch zusätzliche Informationen aus.
+Jeder Event-Trigger des `tcp_drop()` Events wird dabei mit der Systemzeit, Prozess-(+id) und dem Programm eingeleitet unter welches das Event ausgelöst hat. 
+In diesem Fall wurde der Paketverlust durch ein Empfangenes Paket der `ntttcp`-Anwendung ausgelöst.
 Die Senderichtung des Pakets kann anhand der Quell und Empfangs (+ip)-Adresse ermittelt werden.
 Danach folgt der Kernel-Stacktrace, in welchem der Funktionsaufruf-Verlauf bis zum Auslösen des überwachten Events aufgeführt ist.
 
@@ -485,7 +498,8 @@ $ cat ~/tcpdrop_log
 [...]
 ```
 
-Somit ist aus den Logs zu entnehmen, dass unter den getesteten Bedingungen auf dem System (+tcp)-Pakete verloren gingen, eine tiefergehende Untersuchung des Kernel-Stacktrace kann hierzu genauere Informationen bereitstellen.
+Somit ist aus den Logs zu entnehmen, dass unter den getesteten Bedingungen auf dem System (+tcp)-Pakete verloren gingen. Diese traten zudem vermehrt aus, je länger das System getestet wurde.
+Eine tiefergehende Untersuchung des Kernel-Stacktrace kann hierzu genauere Informationen bereitstellen.
 Das Beispiel zeigt auch, dass nicht nur das Auslösen von Events protokolliert werden kann, sondern auch mittels einfacher Skript-Befehle komplexe Debug-Informationen systematisch gewonnen werden können.
 
 
@@ -503,8 +517,8 @@ Auch gibt es hier keinen Zugriff auf die elektrische Ebene des Bus-Systems, somi
 
 ## Aufzeichnung Trace-Log
 
-Zur Aufzeichnung des Trace-Logs wurde `trace-cmd`[@trace-cmd] verwendet. Auf dem Zielsystem wurde dabei nur die Aufzeichnung vorgenommen und die Analyse der Logs erfolgte auf einem seperaten System.
-Für den Test wird zuerst die `Tracing`-Funktionalität aktiviert und alle `sched` und `gpio`-Events aktiviert.
+Auf dem Zielsystem wurde dabei nur die Aufzeichnung vorgenommen und die Analyse der Logs erfolgte auf einem seperaten System.
+Für den Test wird zuerst die `Tracing`-Funktionalität aktiviert und alle `i2c`-Events aktiviert.
 
 ```bash
 # DANGER: RUN ALL NEXT COMMANDS AS ROOT
@@ -550,17 +564,23 @@ $ cat /sys/kernel/debug/tracing/trace
 
 ## Auswertung
 
-Das Tracelog zeigt nun einige Events vom Typ `i2c_write`. Diese werden für die Analyse benötigt, da hier die vom System über den (+i2c)-Bus gesendeten Nachrichten stehen. Zu sehen ist, dass über den `i2c-1` Bus des Systems gesendet wird. Die Zieladresse ist dabei `0x20` und wird im Log mit dem Präfix `a=` angegeben. Die Länge der gesendeten Bytes ist mit `l=1` angegeben. Somit wurde nur ein Byte an den Slave gesendet. Die eigentlichen Daten sind in Hex-Array-Schreibweise angegeben. Hier wurde nacheinander `[01]`, `[02]`, `[04]`, `[08]` gesendet.[@bussnooping]
+Das Tracelog zeigt nun einige Events vom Typ `i2c_write`. Diese werden für die Analyse benötigt, da hier die vom System über den (+i2c)-Bus gesendeten Nachrichten stehen.
+Zu sehen ist, dass über den `i2c-1` Bus des Systems gesendet wird.
+Die Zieladresse ist dabei `0x20` und wird im Log mit dem Präfix `a=` angegeben. Die Länge der gesendeten Bytes ist mit `l=1` angegeben.
+Somit wurde nur ein Byte an den Slave gesendet. Die eigentlichen Daten sind in Hex-Array-Schreibweise angegeben.
+Hier wurde nacheinander `[01]`, `[02]`, `[04]`, `[08]` gesendet.[@bussnooping]
 
 Die korrektheit der Adresse kann zusätzlich mittels des `i2cdetect`-Befehls überprüft werden. Die Ausgabe zeigt, dass am System nur ein (+i2c)-Slave mit der Adresse `0x20` angeschlossen ist, welches somit mit der Ausgabe im Trace-Log übereinstimmt.
 
 ```bash
+# SCAN FOR I2C BUS CLIENTS
 $ i2cdetect -y 1
      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
 00:                         -- -- -- -- -- -- -- -- 
 10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
 20: 20 -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 ```
+
 Anhand der (+i2c)-Adresse und der einfachheit der gesendeten Daten, kann auf einen `PCF8574` Port-Expander-(+ic) geschlossen werden.
 Dieser nimmt jeweils an Adresse `0x20` ein Byte entgegen und schaltet somit die jeweiligen Ausgangspins.
 Der Quellcode bestätigt diese Erkenntnisse ebenfalls. Die in Python geschriebene "Black-Box" verwendet das `smbus`-Modul um auf den (+i2c)-Bus-1 zuzugreifen und sendet in einer Dauerschleife jeweils ein Byte.
