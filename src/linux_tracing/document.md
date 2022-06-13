@@ -504,7 +504,7 @@ Das Beispiel zeigt auch, dass nicht nur das Auslösen von Events protokolliert w
 
 
 
-# Beispiel - Identifikation von Laufzeitproblemen
+# Beispiel - Reverse Engineering
 
 In diesem Abschnitt soll an einem einfachen Beispiel gezeigt werden, wie es mittels Tracing möglich ist, eine Analyse der Nachrichten auf einem (+i2c)-Bus durchzuführen.
 
