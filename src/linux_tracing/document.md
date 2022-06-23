@@ -525,12 +525,13 @@ Für den Test wird zuerst die `Tracing`-Funktionalität aktiviert und alle `i2c`
 $ sudo su
 # ACTIVATE DEBUG FS
 $ mount -t debugfs none /sys/kernel/debug
+$ cd /sys/kernel/debug
 # USE NOP TRACER
 $ echo nop > current_tracer
 # CLEAR RECENT EVENT LOG
 $ echo > /sys/kernel/debug/tracing/trace
 # ENABLE ALL I2C-BUS EVENTS
-echo 1 > /sys/kernel/debug/tracing/events/i2c/enable
+$ echo 1 > /sys/kernel/debug/tracing/events/i2c/enable
 # ENABLE TRACING
 $ echo 1 > /sys/kernel/debug/tracing/tracing_on
 ```
