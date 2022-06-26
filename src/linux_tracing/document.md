@@ -31,7 +31,6 @@ Das Debug-(+fs) wurde in der Kernel-Version `2.6.10-rc3`[@dbgfs] eingeführt. Es
 Ein Vorteil gegenüber des Prozess-(+fs) `/proc` ist, dass jeder Entwickler hier auch eigene Daten zur späteren Diagnose einpflegen kann.
 Um das Dateisystem nutzen zu können, muss dies zuerst aktiviert werden. Nach der Aktivierung stehen die Ordner unter dem angegebenen Pfad zur Verfügung.
 
-
 ```bash
 # ENABLE DEBUG FS
 $ sudo mount -t debugfs debugfs /sys/kernel/debug
@@ -220,16 +219,16 @@ Als letzter Schritt, muss das neu erstellte `uprobe`-Event noch aktiviert werden
 
 ```bash
 # BUILD APPLICATION
-$ gcc ./test.c -o ./tmp/test
+$ gcc ./test.c -o /tmp/test
 # GET OFFSET
-$ objdump -F -S -D ./test | less | grep main
+$ objdump -F -S -D /tmp/test | less | grep main
 0000000000001149 <main> (File Offset: 0x1149):
 # REGISTER uprobe_event
 $ echo "p:my_uprobe /tmp/test:0x1149" > /sys/kernel/debug/tracing/uprobe_events
 # ACTIVATE UPROBE EVENTS
 $ echo 1 > /sys/kernel/tracing/events/uprobes/enable
 # EXECUTE PROGRAM
-$ /root/hello
+$ /tmp/test
 Hello uprobe
 [...]
 # PRINT TRACED EVENTS
