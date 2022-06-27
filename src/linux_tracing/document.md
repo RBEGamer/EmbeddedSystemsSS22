@@ -526,19 +526,22 @@ $ sudo su
 $ mount -t debugfs none /sys/kernel/debug
 $ cd /sys/kernel/debug
 # USE NOP TRACER
+$ cd ./tracing/
 $ echo nop > current_tracer
 # CLEAR RECENT EVENT LOG
-$ echo > /sys/kernel/debug/tracing/trace
+$ echo > ./trace
 # ENABLE ALL I2C-BUS EVENTS
-$ echo 1 > /sys/kernel/debug/tracing/events/i2c/enable
+$ echo 1 > ./events/i2c/enable
 # ENABLE TRACING
-$ echo 1 > /sys/kernel/debug/tracing/tracing_on
+$ echo 1 > ./tracing_on
 ```
 
 Nachdem das Tracing aktiviert wurde, wurde das Trace-Log manuell analysiert.
 
 ```bash
 $ cat /sys/kernel/debug/tracing/trace
+# OR
+$ watch tail -n 10 cat /sys/kernel/debug/tracing/trace
 # tracer: nop
 #
 # entries-in-buffer/entries-written: 96/96 
