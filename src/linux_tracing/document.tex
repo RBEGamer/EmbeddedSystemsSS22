@@ -307,16 +307,16 @@ Aufzeichnung oder Ausgabe der \passthrough{\lstinline!uprobe!}.
 
 \begin{lstlisting}[language=bash]
 # BUILD APPLICATION
-$ gcc ./test.c -o ./tmp/test
+$ gcc ./test.c -o /tmp/test
 # GET OFFSET
-$ objdump -F -S -D ./test | less | grep main
+$ objdump -F -S -D /tmp/test | less | grep main
 0000000000001149 <main> (File Offset: 0x1149):
 # REGISTER uprobe_event
 $ echo "p:my_uprobe /tmp/test:0x1149" > /sys/kernel/debug/tracing/uprobe_events
 # ACTIVATE UPROBE EVENTS
 $ echo 1 > /sys/kernel/tracing/events/uprobes/enable
 # EXECUTE PROGRAM
-$ /root/hello
+$ /tmp/test
 Hello uprobe
 [...]
 # PRINT TRACED EVENTS
@@ -730,13 +730,14 @@ $ sudo su
 $ mount -t debugfs none /sys/kernel/debug
 $ cd /sys/kernel/debug
 # USE NOP TRACER
+$ cd ./tracing/
 $ echo nop > current_tracer
 # CLEAR RECENT EVENT LOG
-$ echo > /sys/kernel/debug/tracing/trace
+$ echo > ./trace
 # ENABLE ALL I2C-BUS EVENTS
-$ echo 1 > /sys/kernel/debug/tracing/events/i2c/enable
+$ echo 1 > ./events/i2c/enable
 # ENABLE TRACING
-$ echo 1 > /sys/kernel/debug/tracing/tracing_on
+$ echo 1 > ./tracing_on
 \end{lstlisting}
 
 Nachdem das Tracing aktiviert wurde, wurde das Trace-Log manuell
@@ -744,6 +745,8 @@ analysiert.
 
 \begin{lstlisting}[language=bash]
 $ cat /sys/kernel/debug/tracing/trace
+# OR
+$ watch tail -n 10 cat /sys/kernel/debug/tracing/trace
 # tracer: nop
 #
 # entries-in-buffer/entries-written: 96/96 
